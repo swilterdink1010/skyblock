@@ -1,3 +1,5 @@
+UPGRADE_TYPES = ["speed", "multi_drop", "fuel_cap", "organic_matter_cap", "cost_reduction"]
+
 UPGRADE_BASE = {
     "speed": 1,
     "multi_drop": 1,
@@ -37,6 +39,64 @@ FUEL_SOURCES = {
     },
 }
 
+UPGRADE_SOURCES = {
+    "ENCHANTED_WHEAT": {
+        "pretty_print": "Enchanted Wheat",
+    },
+    "ENCHANTED_HAY_BALE": {
+        "pretty_print": "Enchanted Hay Bale",
+    },
+    "ENCHANTED_GOLDEN_CARROT": {
+        "pretty_print": "Enchanted Golden Carrot",
+    },
+    "ENCHANTED_BAKED_POTATO": {
+        "pretty_print": "Enchanted Baked Potato",
+    },
+    "ENCHANTED_PUMPKIN": {
+        "pretty_print": "Enchanted Pumpkin",
+    },
+    "POLISHED_PUMPKIN": {
+        "pretty_print": "Polished Pumpkin",
+    },
+    "ENCHANTED_SUGAR_CANE": {
+        "pretty_print": "Enchanted Sugar Cane",
+    },
+    "ENCHANTED_MELON_BLOCK": {
+        "pretty_print": "Enchanted Melon",
+    },
+    "ENCHANTED_CACTUS": {
+        "pretty_print": "Enchanted Cactus",
+    },
+    "ENCHANTED_COOKIE": {
+        "pretty_print": "Enchanted Cookie",
+    },
+    "ENCHANTED_BROWN_MUSHROOM": {
+        "pretty_print": "Enchanted Brown Mushroom",
+    },
+    "ENCHANTED_HUGE_MUSHROOM_1": {
+        "pretty_print": "Enchanted Brown Mushroom Block",
+    },
+    "ENCHANTED_HUGE_MUSHROOM_2": {
+        "pretty_print": "Enchanted Red Mushroom Block",
+    },
+    "MUTANT_NETHER_STALK": {
+        "pretty_print": "Mutant Nether Wart",
+    },
+    "CROPIE": {
+        "pretty_print": "Cropie",
+    },
+    "SQUASH": {
+        "pretty_print": "Squash",
+    },
+    "FERMENTO": {
+        "pretty_print": "Fermento",
+    },
+    "CONDENSED_FERMENTO": {
+        "pretty_print": "Condensed Fermento",
+    },
+    
+}
+
 MAX_UPGRADE_LEVEL = 25
 
 BASE_CRAFT_TIME = 600 # seconds
@@ -47,737 +107,637 @@ BASE_ORGANIC_MATTER_COST = 4000 # per craft
 UPGRADE_COST = {
     "speed": [
         {
-            "copper": 100,
-            "item_count": 128,
-            "item_id": "ENCHANTED_WHEAT"
+            "count": 128,
+            "id": "ENCHANTED_WHEAT"
         },
         {
-            "copper": 150,
-            "item_count": 2,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 2,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 200,
-            "item_count": 256,
-            "item_id": "ENCHANTED_WHEAT"
+            "count": 256,
+            "id": "ENCHANTED_WHEAT"
         },
         {
-            "copper": 250,
-            "item_count": 4,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 4,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 300,
-            "item_count": 512,
-            "item_id": "ENCHANTED_WHEAT"
+            "count": 512,
+            "id": "ENCHANTED_WHEAT"
         },
         {
-            "copper": 350,
-            "item_count": 8,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 8,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 400,
-            "item_count": 8,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 8,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 500,
-            "item_count": 16,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 16,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 600,
-            "item_count": 12,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 12,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 700,
-            "item_count": 32,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 32,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 800,
-            "item_count": 16,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 16,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 900,
-            "item_count": 40,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 40,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 1000,
-            "item_count": 24,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 24,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 1200,
-            "item_count": 48,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 48,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 1400,
-            "item_count": 32,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 32,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 1600,
-            "item_count": 64,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 64,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 1800,
-            "item_count": 40,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 40,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 2000,
-            "item_count": 96,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 96,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 2250,
-            "item_count": 48,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 48,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 2500,
-            "item_count": 128,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 128,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 2750,
-            "item_count": 64,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 64,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 3000,
-            "item_count": 192,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 192,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 3300,
-            "item_count": 96,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 96,
+            "id": "ENCHANTED_HAY_BALE"
         },
         {
-            "copper": 3600,
-            "item_count": 256,
-            "item_id": "ENCHANTED_GOLDEN_CARROT"
+            "count": 256,
+            "id": "ENCHANTED_GOLDEN_CARROT"
         },
         {
-            "copper": 4000,
-            "item_count": 128,
-            "item_id": "ENCHANTED_HAY_BALE"
+            "count": 128,
+            "id": "ENCHANTED_HAY_BALE"
         },
     ],
     "multi_drop": [
         {
-            "copper": 100,
-            "item_count": 1,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 1,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 150,
-            "item_count": 64,
-            "item_id": "ENCHANTED_PUMPKIN"
+            "count": 64,
+            "id": "ENCHANTED_PUMPKIN"
         },
         {
-            "copper": 200,
-            "item_count": 2,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 2,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 250,
-            "item_count": 1,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 1,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 300,
-            "item_count": 4,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 4,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 350,
-            "item_count": 2,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 2,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 400,
-            "item_count": 8,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 8,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 500,
-            "item_count": 4,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 4,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 600,
-            "item_count": 16,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 16,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 700,
-            "item_count": 8,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 8,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 800,
-            "item_count": 32,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 32,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 900,
-            "item_count": 16,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 16,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 1000,
-            "item_count": 48,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 48,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 1200,
-            "item_count": 24,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 24,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 1400,
-            "item_count": 64,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 64,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 1600,
-            "item_count": 32,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 32,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 1800,
-            "item_count": 80,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 80,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 2000,
-            "item_count": 48,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 48,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 2250,
-            "item_count": 112,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 112,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 2500,
-            "item_count": 64,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 64,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 2750,
-            "item_count": 144,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 144,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 3000,
-            "item_count": 96,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 96,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 3300,
-            "item_count": 176,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 176,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
         {
-            "copper": 3600,
-            "item_count": 128,
-            "item_id": "POLISHED_PUMPKIN"
+            "count": 128,
+            "id": "POLISHED_PUMPKIN"
         },
         {
-            "copper": 4000,
-            "item_count": 224,
-            "item_id": "ENCHANTED_BAKED_POTATO"
+            "count": 224,
+            "id": "ENCHANTED_BAKED_POTATO"
         },
     ],
     "fuel_cap": [
         {
-            "copper": 100,
-            "item_count": 1,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 1,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 150,
-            "item_count": 4,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 4,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 200,
-            "item_count": 2,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 2,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 250,
-            "item_count": 8,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 8,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 300,
-            "item_count": 4,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 4,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 350,
-            "item_count": 16,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 16,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 400,
-            "item_count": 8,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 8,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 500,
-            "item_count": 32,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 32,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 600,
-            "item_count": 16,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 16,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 700,
-            "item_count": 40,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 40,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 800,
-            "item_count": 32,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 32,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 900,
-            "item_count": 48,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 48,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 1000,
-            "item_count": 40,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 40,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 1200,
-            "item_count": 64,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 64,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 1400,
-            "item_count": 48,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 48,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 1600,
-            "item_count": 96,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 96,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 1800,
-            "item_count": 64,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 64,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 2000,
-            "item_count": 128,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 128,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 2250,
-            "item_count": 96,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 96,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 2500,
-            "item_count": 192,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 192,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 2750,
-            "item_count": 144,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 144,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 3000,
-            "item_count": 288,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 288,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 3300,
-            "item_count": 192,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 192,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
         {
-            "copper": 3600,
-            "item_count": 384,
-            "item_id": "ENCHANTED_MELON_BLOCK"
+            "count": 384,
+            "id": "ENCHANTED_MELON_BLOCK"
         },
         {
-            "copper": 4000,
-            "item_count": 256,
-            "item_id": "ENCHANTED_SUGAR_CANE"
+            "count": 256,
+            "id": "ENCHANTED_SUGAR_CANE"
         },
     ],
     "organic_matter_cap": [
         {
-            "copper": 100,
-            "item_count": 1,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 1,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 150,
-            "item_count": 3,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 3,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 200,
-            "item_count": 2,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 2,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 250,
-            "item_count": 6,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 6,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 300,
-            "item_count": 4,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 4,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 350,
-            "item_count": 12,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 12,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 400,
-            "item_count": 7,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 7,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 500,
-            "item_count": 24,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 24,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 600,
-            "item_count": 10,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 10,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 700,
-            "item_count": 48,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 48,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 800,
-            "item_count": 16,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 16,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 900,
-            "item_count": 64,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 64,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 1000,
-            "item_count": 24,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 24,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 1200,
-            "item_count": 96,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 96,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 1400,
-            "item_count": 32,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 32,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 1600,
-            "item_count": 128,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 128,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 1800,
-            "item_count": 40,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 40,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 2000,
-            "item_count": 160,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 160,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 2250,
-            "item_count": 48,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 48,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 2500,
-            "item_count": 208,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 208,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 2750,
-            "item_count": 64,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 64,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 3000,
-            "item_count": 256,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 256,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 3300,
-            "item_count": 96,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 96,
+            "id": "ENCHANTED_CACTUS"
         },
         {
-            "copper": 3600,
-            "item_count": 320,
-            "item_id": "ENCHANTED_COOKIE"
+            "count": 320,
+            "id": "ENCHANTED_COOKIE"
         },
         {
-            "copper": 4000,
-            "item_count": 128,
-            "item_id": "ENCHANTED_CACTUS"
+            "count": 128,
+            "id": "ENCHANTED_CACTUS"
         },
     ],
     "cost_reduction": [
         {
-            "copper": 100,
-            "item_count": 32,
-            "item_id": "ENCHANTED_BROWN_MUSHROOM"
+            "count": 32,
+            "id": "ENCHANTED_BROWN_MUSHROOM"
         },
         {
-            "copper": 150,
-            "item_count": 1,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 1,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 200,
-            "item_count": 2,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_2"
+            "count": 2,
+            "id": "ENCHANTED_HUGE_MUSHROOM_2"
         },
         {
-            "copper": 250,
-            "item_count": 2,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 2,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 300,
-            "item_count": 4,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_1"
+            "count": 4,
+            "id": "ENCHANTED_HUGE_MUSHROOM_1"
         },
         {
-            "copper": 350,
-            "item_count": 4,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 4,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 400,
-            "item_count": 8,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_2"
+            "count": 8,
+            "id": "ENCHANTED_HUGE_MUSHROOM_2"
         },
         {
-            "copper": 500,
-            "item_count": 8,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 8,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 600,
-            "item_count": 16,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_1"
+            "count": 16,
+            "id": "ENCHANTED_HUGE_MUSHROOM_1"
         },
         {
-            "copper": 700,
-            "item_count": 16,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 16,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 800,
-            "item_count": 24,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_2"
+            "count": 24,
+            "id": "ENCHANTED_HUGE_MUSHROOM_2"
         },
         {
-            "copper": 900,
-            "item_count": 32,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 32,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 1000,
-            "item_count": 32,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_1"
+            "count": 32,
+            "id": "ENCHANTED_HUGE_MUSHROOM_1"
         },
         {
-            "copper": 1200,
-            "item_count": 48,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 48,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 1400,
-            "item_count": 48,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_2"
+            "count": 48,
+            "id": "ENCHANTED_HUGE_MUSHROOM_2"
         },
         {
-            "copper": 1600,
-            "item_count": 64,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 64,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 1800,
-            "item_count": 64,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_1"
+            "count": 64,
+            "id": "ENCHANTED_HUGE_MUSHROOM_1"
         },
         {
-            "copper": 2000,
-            "item_count": 80,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 80,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 2250,
-            "item_count": 96,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_2"
+            "count": 96,
+            "id": "ENCHANTED_HUGE_MUSHROOM_2"
         },
         {
-            "copper": 2500,
-            "item_count": 112,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 112,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 2750,
-            "item_count": 128,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_1"
+            "count": 128,
+            "id": "ENCHANTED_HUGE_MUSHROOM_1"
         },
         {
-            "copper": 3000,
-            "item_count": 160,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 160,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 3300,
-            "item_count": 160,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_2"
+            "count": 160,
+            "id": "ENCHANTED_HUGE_MUSHROOM_2"
         },
         {
-            "copper": 3600,
-            "item_count": 224,
-            "item_id": "MUTANT_NETHER_STALK"
+            "count": 224,
+            "id": "MUTANT_NETHER_STALK"
         },
         {
-            "copper": 4000,
-            "item_count": 192,
-            "item_id": "ENCHANTED_HUGE_MUSHROOM_1"
+            "count": 192,
+            "id": "ENCHANTED_HUGE_MUSHROOM_1"
         },
     ],
     "general": [
         {
+            "copper": 100,
             "count": 0,
             "id": "CROPIE",
         },
         {
+            "copper": 150,
             "count": 0,
             "id": "CROPIE",
         },
         {
+            "copper": 200,
             "count": 0,
             "id": "CROPIE",
         },
         {
+            "copper": 250,
             "count": 0,
             "id": "CROPIE",
         },
         {
+            "copper": 300,
             "count": 0,
             "id": "CROPIE",
         },
         {
+            "copper": 350,
             "count": 0,
             "id": "CROPIE",
         },
         {
+            "copper": 400,
             "count": 0,
             "id": "CROPIE",
         },
         {
+            "copper": 500,
             "count": 3,
             "id": "CROPIE",
         },
         {
+            "copper": 600,
             "count": 6,
             "id": "CROPIE",
         },
         {
+            "copper": 700,
             "count": 12,
             "id": "CROPIE",
         },
         {
+            "copper": 800,
             "count": 24,
             "id": "CROPIE",
         },
         {
+            "copper": 900,
             "count": 48,
             "id": "CROPIE",
         },
         {
+            "copper": 1000,
             "count": 96,
             "id": "CROPIE",
         },
         {
+            "copper": 1200,
             "count": 3,
             "id": "SQUASH",
         },
         {
+            "copper": 1400,
             "count": 6,
             "id": "SQUASH",
         },
         {
+            "copper": 1600,
             "count": 12,
             "id": "SQUASH",
         },
         {
+            "copper": 1800,
             "count": 24,
             "id": "SQUASH",
         },
         {
+            "copper": 2000,
             "count": 48,
             "id": "SQUASH",
         },
         {
+            "copper": 2250,
             "count": 96,
             "id": "SQUASH",
         },
         {
+            "copper": 2500,
             "count": 3,
             "id": "FERMENTO",
         },
         {
+            "copper": 2750,
             "count": 6,
             "id": "FERMENTO",
         },
         {
+            "copper": 3000,
             "count": 12,
             "id": "FERMENTO",
         },
         {
+            "copper": 3300,
             "count": 2,
             "id": "CONDENSED_FERMENTO",
         },
         {
+            "copper": 3600,
             "count": 4,
             "id": "CONDENSED_FERMENTO",
         },
         {
+            "copper": 4000,
             "count": 8,
             "id": "CONDENSED_FERMENTO",
         },
