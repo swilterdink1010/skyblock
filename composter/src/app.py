@@ -207,7 +207,7 @@ def main():
 
                         matter_upkeep_hr = get_bz_price(matter)*matter_items_per_hr
                         matter_upkeep = matter_upkeep_hr*time/3600
-                        f"Upkeep: {round(matter_upkeep, 1):,}"
+                        f"Upkeep: :orange[{round(matter_upkeep, 1):,}]"
                     
                     with fuel_col:
                         fuel = st.selectbox("Fuel Source:", cc.FUEL_SOURCES.keys(), format_func=lambda x: cc.FUEL_SOURCES[x]["pretty_print"])
@@ -217,7 +217,7 @@ def main():
                     
                         fuel_upkeep_hr = get_bz_price(fuel)*fuel_items_per_hr
                         fuel_upkeep = fuel_upkeep_hr*time/3600
-                        f"Upkeep: {round(fuel_upkeep, 1):,}"
+                        f"Upkeep: :orange[{round(fuel_upkeep, 1):,}]"
                 
         
         with uptime_tab:
