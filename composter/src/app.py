@@ -125,9 +125,9 @@ def main():
                 with st.columns(1, border=True)[0]:
                     matter_col, fuel_col = st.columns(2)
                     with matter_col:
-                        matter = st.selectbox("Organic Matter Source:", cc.ORGANIC_MATTER_SOURCES.keys())
+                        matter = st.selectbox("Organic Matter Source:", cc.ORGANIC_MATTER_SOURCES.keys(), format_func=lambda x: cc.ORGANIC_MATTER_SOURCES[x]["pretty_print"])
                     with fuel_col:
-                        fuel = st.selectbox("Fuel Source:", cc.FUEL_SOURCES.keys())
+                        fuel = st.selectbox("Fuel Source:", cc.FUEL_SOURCES.keys(), format_func=lambda x: cc.FUEL_SOURCES[x]["pretty_print"])
                         
                 fuel_used_per_hr = calc_composter_value("speed")*cc.BASE_FUEL_COST*(1-calc_composter_value("cost_reduction"))
                 matter_used_per_hr = calc_composter_value("speed")*cc.BASE_ORGANIC_MATTER_COST*(1-calc_composter_value("cost_reduction"))
@@ -135,8 +135,8 @@ def main():
                 fuel_items_per_hr = (fuel_used_per_hr/cc.FUEL_SOURCES[fuel]["value"])*cc.FUEL_SOURCES[fuel].get("count", 1)
                 matter_items_per_hr = (matter_used_per_hr/cc.ORGANIC_MATTER_SOURCES[matter]["value"])*cc.ORGANIC_MATTER_SOURCES[matter].get("count", 1)
                 
-                fuel_upkeep = get_bz_price(cc.FUEL_SOURCES[fuel]["id"])*fuel_items_per_hr
-                matter_upkeep = get_bz_price(cc.ORGANIC_MATTER_SOURCES[matter]["id"])*matter_items_per_hr
+                fuel_upkeep = get_bz_price(fuel)*fuel_items_per_hr
+                matter_upkeep = get_bz_price(matter)*matter_items_per_hr
                 
                 st.markdown(f"## :rainbow[Profit Per Hour]: :orange[{round((get_bz_price("COMPOST") * compost_per_hr)-matter_upkeep-fuel_upkeep, 1)}]", text_alignment="center")
         

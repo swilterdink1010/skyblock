@@ -15,24 +15,24 @@ UPGRADE_INCREASES = {
 }
 
 ORGANIC_MATTER_SOURCES = {
-    "Box of Seeds": {
-        "id": "BOX_OF_SEEDS",
+    "BOX_OF_SEEDS": {
+        "pretty_print": "Box of Seeds",
         "value": 25600,
     },
-    "Enchanted Seeds": {
-        "id": "ENCHANTED_SEEDS",
+    "ENCHANTED_SEEDS": {
+        "pretty_print": "Enchanted Seeds",
         "value": 160,
     }
 }
 
 FUEL_SOURCES = {
-    "Sunflower Oil (Crafted)": {
-        "id": "ENCHANTED_SUNFLOWER",
+    "ENCHANTED_SUNFLOWER": {
+        "pretty_print": "Sunflower Oil (Crafted)",
         "count": 9,
         "value": 20000,
     },
-    "Sunflower Oil": {
-        "id": "SUNFLOWER_OIL",
+    "SUNFLOWER_OIL": {
+        "pretty_print": "Sunflower Oil",
         "value": 20000,
     },
 }
