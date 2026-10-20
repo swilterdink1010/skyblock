@@ -102,6 +102,12 @@ def mats_to_upgrade(state: ComposterState, upgraded: ComposterState):
     
     return items, copper
                 
+                
+def numerize(val: int):
+    if val >= 1000000000: return f"{round(val/1000000000, 1)}b"
+    if val > 1000000: return f"{round(val/1000000, 1)}m"
+    if val > 1000: return f"{round(val/1000, 1)}k"
+    return round(val, 1)
 
 
 def time_to_str(time: float):
@@ -254,11 +260,16 @@ def main():
                     with st.expander("Items"):
                         for id in items.keys():
                             with st.columns(1, border=True, vertical_alignment="center")[0]:
-                                cols3 = st.columns(2)
+                                price = get_bz_price(id)
+                                cols3 = st.columns([7, 2, 2, 3])
                                 with cols3[0]:
-                                    st.markdown(f":gray[{cc.UPGRADE_SOURCES[id]["pretty_print"]}]", text_alignment="left")
+                                    st.markdown(f"{cc.UPGRADE_SOURCES[id]["pretty_print"]}", text_alignment="left")
                                 with cols3[1]:
-                                    st.markdown(f":gray[x{items[id]}]", text_alignment="right")
+                                    st.markdown(f":gray[x]{items[id]}", text_alignment="right")
+                                with cols3[2]:
+                                    st.markdown(f":orange[{numerize(items[id]*price)}]", text_alignment="right")
+                                with cols3[3]:
+                                    st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
                                     
                 
 
