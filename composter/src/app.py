@@ -208,22 +208,26 @@ def main():
                     with matter_col:
                         matter = st.selectbox("Organic Matter Source:", cc.ORGANIC_MATTER_SOURCES.keys(), format_func=lambda x: cc.ORGANIC_MATTER_SOURCES[x]["pretty_print"])
                         
-                        matter_used_per_hr = calc_composter_value("speed")*cc.BASE_ORGANIC_MATTER_COST*(1-calc_composter_value("cost_reduction"))
-                        matter_items_per_hr = (matter_used_per_hr/cc.ORGANIC_MATTER_SOURCES[matter]["value"])*cc.ORGANIC_MATTER_SOURCES[matter].get("count", 1)
-
-                        matter_upkeep_hr = get_bz_price(matter)*matter_items_per_hr
-                        matter_upkeep = matter_upkeep_hr*time/3600
-                        f"Upkeep: :orange[{round(matter_upkeep, 1):,}]"
+                        matter_items_refill = math.ceil(calc_composter_value("organic_matter_cap")/cc.ORGANIC_MATTER_SOURCES[matter]["value"])*cc.ORGANIC_MATTER_SOURCES[matter].get("count", 1)
+                        matter_cost_refill = get_bz_price(matter)*matter_items_refill
+                        
+                        txt_col = st.columns([5, 1])
+                        with txt_col[0]:
+                            f"Refill Cost: :orange[{round(matter_cost_refill, 1):,}]"
+                        with txt_col[1]:
+                            f":gray[x{matter_items_refill}]"
                     
                     with fuel_col:
                         fuel = st.selectbox("Fuel Source:", cc.FUEL_SOURCES.keys(), format_func=lambda x: cc.FUEL_SOURCES[x]["pretty_print"])
                         
-                        fuel_used_per_hr = calc_composter_value("speed")*cc.BASE_FUEL_COST*(1-calc_composter_value("cost_reduction"))
-                        fuel_items_per_hr = (fuel_used_per_hr/cc.FUEL_SOURCES[fuel]["value"])*cc.FUEL_SOURCES[fuel].get("count", 1)
-                    
-                        fuel_upkeep_hr = get_bz_price(fuel)*fuel_items_per_hr
-                        fuel_upkeep = fuel_upkeep_hr*time/3600
-                        f"Upkeep: :orange[{round(fuel_upkeep, 1):,}]"
+                        fuel_items_refill = math.ceil(calc_composter_value("fuel_cap")/cc.FUEL_SOURCES[fuel]["value"])*cc.FUEL_SOURCES[fuel].get("count", 1)
+                        fuel_cost_refill = get_bz_price(fuel)*fuel_items_refill
+                        
+                        txt_col = st.columns([5, 1])
+                        with txt_col[0]:
+                            f"Refill Cost: :orange[{round(fuel_cost_refill, 1):,}]"
+                        with txt_col[1]:
+                            f":gray[x{fuel_items_refill}]"
                 
         
         with uptime_tab:
