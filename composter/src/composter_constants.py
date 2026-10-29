@@ -1,4 +1,6 @@
-UPGRADE_TYPES = ["speed", "multi_drop", "fuel_cap", "organic_matter_cap", "cost_reduction"]
+UPGRADE_TYPES = ["speed", "multi_drop", "fuel_cap", "organic_matter_cap", "cost_reduction", "speed_attribute"]
+
+ATTRIBUTE_RARITIES = ["common", "uncommon", "rare", "epic", "legendary"]
 
 UPGRADE_BASE = {
     "speed": 1,
@@ -6,6 +8,7 @@ UPGRADE_BASE = {
     "fuel_cap": 100000,
     "organic_matter_cap": 40000,
     "cost_reduction": 0,
+    "speed_attribute": 1,
 }
 
 UPGRADE_INCREASES = {
@@ -14,6 +17,24 @@ UPGRADE_INCREASES = {
     "fuel_cap": 30000,
     "organic_matter_cap": 30000,
     "cost_reduction": 0.01,
+    "speed_attribute": 0.01,
+}
+
+UPGRADE_CAP = {
+    "speed": 25,
+    "multi_drop": 25,
+    "fuel_cap": 25,
+    "organic_matter_cap": 25,
+    "cost_reduction": 25,
+    "speed_attribute": 10,
+}
+
+ATTRIBUTE_STACKS_PER_LEVEL = {
+    "common": [1, 3, 5, 6, 7, 8, 10, 14, 18, 24],
+    "uncommon": [1, 2, 3, 4, 5, 6, 7, 8, 12, 16],
+    "rare": [1, 2, 3, 3, 4, 4, 5, 6, 8, 12],
+    "epic": [1, 1, 2, 2, 3, 3, 4, 4, 5, 7],
+    "legendary": [1, 1, 1, 2, 2, 2, 3, 3, 4, 5],
 }
 
 ORGANIC_MATTER_SOURCES = {
@@ -38,6 +59,8 @@ FUEL_SOURCES = {
         "value": 20000,
     },
 }
+
+
 
 UPGRADE_SOURCES = {
     "ENCHANTED_WHEAT": {
@@ -94,7 +117,6 @@ UPGRADE_SOURCES = {
     "CONDENSED_FERMENTO": {
         "pretty_print": "Condensed Fermento",
     },
-    
 }
 
 MAX_UPGRADE_LEVEL = 25
@@ -104,7 +126,143 @@ BASE_CRAFT_TIME = 600 # seconds
 BASE_FUEL_COST = 2000 # per craft
 BASE_ORGANIC_MATTER_COST = 4000 # per craft
 
+UPGRADE_USES_GENERAL = {
+    "speed": True,
+    "multi_drop": True,
+    "fuel_cap": True,
+    "organic_matter_cap": True,
+    "cost_reduction": True,
+    "speed_attribute": False,
+}
+
 UPGRADE_COST = {
+    "general": [
+        {
+            "copper": 100,
+            "count": 0,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 150,
+            "count": 0,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 200,
+            "count": 0,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 250,
+            "count": 0,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 300,
+            "count": 0,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 350,
+            "count": 0,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 400,
+            "count": 0,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 500,
+            "count": 3,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 600,
+            "count": 6,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 700,
+            "count": 12,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 800,
+            "count": 24,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 900,
+            "count": 48,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 1000,
+            "count": 96,
+            "id": "CROPIE",
+        },
+        {
+            "copper": 1200,
+            "count": 3,
+            "id": "SQUASH",
+        },
+        {
+            "copper": 1400,
+            "count": 6,
+            "id": "SQUASH",
+        },
+        {
+            "copper": 1600,
+            "count": 12,
+            "id": "SQUASH",
+        },
+        {
+            "copper": 1800,
+            "count": 24,
+            "id": "SQUASH",
+        },
+        {
+            "copper": 2000,
+            "count": 48,
+            "id": "SQUASH",
+        },
+        {
+            "copper": 2250,
+            "count": 96,
+            "id": "SQUASH",
+        },
+        {
+            "copper": 2500,
+            "count": 3,
+            "id": "FERMENTO",
+        },
+        {
+            "copper": 2750,
+            "count": 6,
+            "id": "FERMENTO",
+        },
+        {
+            "copper": 3000,
+            "count": 12,
+            "id": "FERMENTO",
+        },
+        {
+            "copper": 3300,
+            "count": 2,
+            "id": "CONDENSED_FERMENTO",
+        },
+        {
+            "copper": 3600,
+            "count": 4,
+            "id": "CONDENSED_FERMENTO",
+        },
+        {
+            "copper": 4000,
+            "count": 8,
+            "id": "CONDENSED_FERMENTO",
+        },
+    ],
     "speed": [
         {
             "count": 128,
@@ -615,131 +773,56 @@ UPGRADE_COST = {
             "id": "ENCHANTED_HUGE_MUSHROOM_1"
         },
     ],
-    "general": [
+    "speed_attribute": [
         {
-            "copper": 100,
-            "count": 0,
-            "id": "CROPIE",
+            "count": 1,
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
         },
         {
-            "copper": 150,
-            "count": 0,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 200,
-            "count": 0,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 250,
-            "count": 0,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 300,
-            "count": 0,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 350,
-            "count": 0,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 400,
-            "count": 0,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 500,
-            "count": 3,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 600,
-            "count": 6,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 700,
-            "count": 12,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 800,
-            "count": 24,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 900,
-            "count": 48,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 1000,
-            "count": 96,
-            "id": "CROPIE",
-        },
-        {
-            "copper": 1200,
-            "count": 3,
-            "id": "SQUASH",
-        },
-        {
-            "copper": 1400,
-            "count": 6,
-            "id": "SQUASH",
-        },
-        {
-            "copper": 1600,
-            "count": 12,
-            "id": "SQUASH",
-        },
-        {
-            "copper": 1800,
-            "count": 24,
-            "id": "SQUASH",
-        },
-        {
-            "copper": 2000,
-            "count": 48,
-            "id": "SQUASH",
-        },
-        {
-            "copper": 2250,
-            "count": 96,
-            "id": "SQUASH",
-        },
-        {
-            "copper": 2500,
-            "count": 3,
-            "id": "FERMENTO",
-        },
-        {
-            "copper": 2750,
-            "count": 6,
-            "id": "FERMENTO",
-        },
-        {
-            "copper": 3000,
-            "count": 12,
-            "id": "FERMENTO",
-        },
-        {
-            "copper": 3300,
             "count": 2,
-            "id": "CONDENSED_FERMENTO",
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
         },
         {
-            "copper": 3600,
+            "count": 3,
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
+        },
+        {
             "count": 4,
-            "id": "CONDENSED_FERMENTO",
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
         },
         {
-            "copper": 4000,
+            "count": 5,
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
+        },
+        {
+            "count": 6,
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
+        },
+        {
+            "count": 7,
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
+        },
+        {
             "count": 8,
-            "id": "CONDENSED_FERMENTO",
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
+        },
+        {
+            "count": 12,
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
+        },
+        {
+            "count": 16,
+            "id": "SHARD_BAYOU_SLUDGE",
+            "rarity": "uncommon",
         },
     ]
 }

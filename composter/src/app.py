@@ -2,9 +2,20 @@ import hyapi, copy, math
 import composter_constants as cc
 import streamlit as st
         
-        
 def st_get(key: str, default = None):
     return st.session_state.get(key, default)
+
+
+def attr_stacks_to_level(stacks: int, rarity: str):
+    if rarity not in cc.ATTRIBUTE_RARITIES:
+        raise KeyError(f"Invalid input: {rarity}")
+    stack_sum = 0
+    level = 0
+    while stack_sum <= stacks and level < 10:
+        stack_sum += cc.ATTRIBUTE_STACKS_PER_LEVEL[rarity][level]
+        if stack_sum <= stacks:
+            level += 1
+    return level, stack_sum - stacks
 
 
 def init_session_state():
@@ -16,22 +27,26 @@ def init_session_state():
 
 def init_composter_data():
     if (st_get("last_profile") != st.session_state.profile_id) or st_get("reset_composter", False):
-        for upgrade in ["speed", "multi_drop", "fuel_cap", "organic_matter_cap", "cost_reduction"]:
-            st.session_state[upgrade] = st.session_state.garden["composter_data"]["upgrades"].get(upgrade, 0)
+        for upgrade in cc.UPGRADE_TYPES:
+            if cc.UPGRADE_USES_GENERAL[upgrade]:
+                st.session_state[upgrade] = st.session_state.garden["composter_data"]["upgrades"].get(upgrade, 0)
+        st.session_state["speed_attribute"] = st.session_state.attr.get("stacks", {}).get("compost_speed", 0)
+        
         st.session_state.last_profile = st.session_state.profile_id
         
         
 class ComposterState:
-    def __init__(self, speed, multi_drop, fuel_cap, organic_matter_cap, cost_reduction):
+    def __init__(self, speed, multi_drop, fuel_cap, organic_matter_cap, cost_reduction, speed_attribute):
         self.speed = speed
         self.multi_drop = multi_drop
         self.fuel_cap = fuel_cap
         self.organic_matter_cap = organic_matter_cap
         self.cost_reduction = cost_reduction
+        self.speed_attribute = speed_attribute
         
         
     def sim_composter(self):
-        spd, md, fc, omc, cr = [calc_composter_value(x, getattr(self, x)) for x in cc.UPGRADE_TYPES]
+        spd, md, fc, omc, cr, att = [calc_composter_value(x, getattr(self, x)) for x in cc.UPGRADE_TYPES]
                 
         time = 0
         output = 0
@@ -42,7 +57,7 @@ class ComposterState:
         while fuel_level >= 0 and organic_matter_level >= 0:
             fuel_level -= cc.BASE_FUEL_COST*(1-cr)
             organic_matter_level -= cc.BASE_ORGANIC_MATTER_COST*(1-cr)
-            time += cc.BASE_CRAFT_TIME/spd
+            time += (cc.BASE_CRAFT_TIME/spd)/att
             output += md
         
         return time, output
@@ -50,8 +65,9 @@ class ComposterState:
     
     def is_maxed(self, *upgrades: str):
         for upg in upgrades:
-            if getattr(self, upg) != 25:
+            if getattr(self, upg) != cc.UPGRADE_CAP[upg]:
                 return False
+        return True
         
         
 class ComposterStateFromSession(ComposterState):
@@ -161,7 +177,11 @@ def main():
         uuid, profiles = get_profiles_cached(st.session_state.ign)
         st.selectbox("Profile:", [profile["cute_name"] for profile in profiles], key="selected_profile")
         st.session_state.profile_id = hyapi.get_profile_id(st.session_state.selected_profile, uuid, profiles=profiles)
-        
+        for profile in range(0, len(profiles)):
+            if profiles[profile]["profile_id"] == st.session_state.profile_id:
+                profile_data = profiles[profile]
+    
+    st.session_state.attr = profile_data["members"][uuid].get("attributes", {})
     st.session_state.bz = get_bz_cached()
     st.session_state.garden = get_garden_cached(st.session_state.profile_id)
     init_composter_data()
@@ -178,13 +198,23 @@ def main():
         st.number_input("Fuel Cap:", min_value=0, max_value=25, key="fuel_cap")
         st.number_input("Organic Matter Cap:", min_value=0, key="organic_matter_cap")
         st.number_input("Cost Reduction:", min_value=0, key="cost_reduction")
+        st.number_input("Compost Speed Attribute Level:", min_value=0, key="speed_attribute")
         st.button("Reset", key="reset_composter")
     
     with content_col:
         upgrade_tab, sim_tab, uptime_tab = st.tabs(["Best Value Upgrades", "Compost Rates", "Target Uptime Upgrades"])
         with upgrade_tab:
-            pass
-        
+            valid_upgrades = []
+            for upgrade in cc.UPGRADE_TYPES:
+                if not ComposterStateFromSession().is_maxed(upgrade):
+                    valid_upgrades.append(upgrade)
+                    
+            upgrade_states = {}
+            for upgrade in valid_upgrades:
+                upgrade_states[upgrade] = {
+                    
+                }
+                    
         with sim_tab:
             with st.columns(1, vertical_alignment="center", border=True)[0]:
                 left, mid, right = st.columns([1, 1, 1])
@@ -218,8 +248,7 @@ def main():
                 fuel_items_refill = math.floor(calc_composter_value("fuel_cap")/cc.FUEL_SOURCES[fuel]["value"])*cc.FUEL_SOURCES[fuel].get("count", 1)
                 fuel_cost_refill = get_bz_price(fuel)*fuel_items_refill
                 
-                st.markdown(f"## :rainbow[Profit Per Hour]: :orange[{round((get_bz_price("COMPOST")*compost_per_hr)-matter_cost_hr-fuel_cost_hr, 1):,}]", text_alignment="center")
-                st.markdown(f"## :rainbow[Profit Per Refill]: :orange[{round(get_bz_price("COMPOST")*output-matter_cost_refill-fuel_cost_refill, 1):,}]", text_alignment="center")
+                st.markdown(f"## :rainbow[Profit Per Hour]: :orange[{round((get_bz_price("COMPOST")*compost_per_hr)-matter_cost_hr-fuel_cost_hr, 1):,}]<br>:blue[Profit Per Refill]: :orange[{round(get_bz_price("COMPOST")*output-matter_cost_refill-fuel_cost_refill, 1):,}]", text_alignment="center", unsafe_allow_html=True)
                 
                 with st.columns(1, border=True)[0]:
                     matter_col, fuel_col = st.columns(2)
