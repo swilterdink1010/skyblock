@@ -1,6 +1,10 @@
 import hyapi, copy, math
 import composter_constants as cc
 import streamlit as st
+        
+        
+def st_get(key: str, default = None):
+    return st.session_state.get(key, default)
 
 
 def init_session_state():
@@ -11,7 +15,7 @@ def init_session_state():
 
 
 def init_composter_data():
-    if (st.session_state.get("last_profile") != st.session_state.profile_id) or st.session_state.get("reset_composter", False):
+    if (st_get("last_profile") != st.session_state.profile_id) or st_get("reset_composter", False):
         for upgrade in ["speed", "multi_drop", "fuel_cap", "organic_matter_cap", "cost_reduction"]:
             st.session_state[upgrade] = st.session_state.garden["composter_data"]["upgrades"].get(upgrade, 0)
         st.session_state.last_profile = st.session_state.profile_id
@@ -52,12 +56,12 @@ class ComposterState:
         
 class ComposterStateFromSession(ComposterState):
     def __init__(self):
-        super().__init__(*[st.session_state.get(upg, 0) for upg in cc.UPGRADE_TYPES])
+        super().__init__(*[st_get(upg, 0) for upg in cc.UPGRADE_TYPES])
         
         
 def calc_composter_value(upgrade: str, level: int = None): # type: ignore
     if level is None:
-        level = st.session_state.get(upgrade, 0)
+        level = st_get(upgrade, 0)
     return cc.UPGRADE_BASE[upgrade] + cc.UPGRADE_INCREASES[upgrade] * level
 
 
@@ -118,7 +122,7 @@ def time_to_str(time: float):
 
 def get_bz_price(id: str):
     if not st.session_state.bz.get(id):
-        raise KeyError(f"Invalid input")
+        raise KeyError(f"Invalid input: {id}")
     return st.session_state.bz[id]["quick_status"]["buyPrice"]
 
 
@@ -199,17 +203,29 @@ def main():
                     compost_per_hr = output/(time/3600)
                     st.markdown(f"### :red[Avg. Compost Per Hour]<br>{round(compost_per_hr, 2)}", text_alignment="center", unsafe_allow_html=True)
                 
-                matter_upkeep_hr, fuel_upkeep_hr = 0, 0
-                st.markdown(f"## :rainbow[Profit Per Hour]: :orange[{round((get_bz_price("COMPOST") * compost_per_hr)-matter_upkeep_hr-fuel_upkeep_hr, 1):,}]", text_alignment="center")
+                matter = st_get("matter", next(iter(cc.ORGANIC_MATTER_SOURCES)))
+                fuel = st_get("fuel", next(iter(cc.FUEL_SOURCES)))
+                
+                matter_used_hr = (cc.BASE_ORGANIC_MATTER_COST*(1-calc_composter_value("cost_reduction"))*calc_composter_value("speed")*3600)/cc.BASE_CRAFT_TIME
+                matter_items_hr = (matter_used_hr/cc.ORGANIC_MATTER_SOURCES[matter]["value"])*cc.ORGANIC_MATTER_SOURCES[matter].get("count", 1)
+                matter_cost_hr = get_bz_price(matter)*matter_items_hr
+                matter_items_refill = math.floor(calc_composter_value("organic_matter_cap")/cc.ORGANIC_MATTER_SOURCES[matter]["value"])*cc.ORGANIC_MATTER_SOURCES[matter].get("count", 1)
+                matter_cost_refill = get_bz_price(matter)*matter_items_refill
+                
+                fuel_used_hr = (cc.BASE_FUEL_COST*(1-calc_composter_value("cost_reduction"))*calc_composter_value("speed")*3600)/cc.BASE_CRAFT_TIME
+                fuel_items_hr = (fuel_used_hr/cc.FUEL_SOURCES[fuel]["value"])*cc.FUEL_SOURCES[fuel].get("count", 1)
+                fuel_cost_hr = get_bz_price(fuel)*fuel_items_hr            
+                fuel_items_refill = math.floor(calc_composter_value("fuel_cap")/cc.FUEL_SOURCES[fuel]["value"])*cc.FUEL_SOURCES[fuel].get("count", 1)
+                fuel_cost_refill = get_bz_price(fuel)*fuel_items_refill
+                
+                st.markdown(f"## :rainbow[Profit Per Hour]: :orange[{round((get_bz_price("COMPOST")*compost_per_hr)-matter_cost_hr-fuel_cost_hr, 1):,}]", text_alignment="center")
+                st.markdown(f"## :rainbow[Profit Per Refill]: :orange[{round(get_bz_price("COMPOST")*output-matter_cost_refill-fuel_cost_refill, 1):,}]", text_alignment="center")
                 
                 with st.columns(1, border=True)[0]:
                     matter_col, fuel_col = st.columns(2)
                     
                     with matter_col:
-                        matter = st.selectbox("Organic Matter Source:", cc.ORGANIC_MATTER_SOURCES.keys(), format_func=lambda x: cc.ORGANIC_MATTER_SOURCES[x]["pretty_print"])
-                        
-                        matter_items_refill = math.ceil(calc_composter_value("organic_matter_cap")/cc.ORGANIC_MATTER_SOURCES[matter]["value"])*cc.ORGANIC_MATTER_SOURCES[matter].get("count", 1)
-                        matter_cost_refill = get_bz_price(matter)*matter_items_refill
+                        st.selectbox("Organic Matter Source:", cc.ORGANIC_MATTER_SOURCES.keys(), format_func=lambda x: cc.ORGANIC_MATTER_SOURCES[x]["pretty_print"], key="matter")
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
@@ -218,10 +234,7 @@ def main():
                             f":gray[x{matter_items_refill}]"
                     
                     with fuel_col:
-                        fuel = st.selectbox("Fuel Source:", cc.FUEL_SOURCES.keys(), format_func=lambda x: cc.FUEL_SOURCES[x]["pretty_print"])
-                        
-                        fuel_items_refill = math.ceil(calc_composter_value("fuel_cap")/cc.FUEL_SOURCES[fuel]["value"])*cc.FUEL_SOURCES[fuel].get("count", 1)
-                        fuel_cost_refill = get_bz_price(fuel)*fuel_items_refill
+                        st.selectbox("Fuel Source:", cc.FUEL_SOURCES.keys(), format_func=lambda x: cc.FUEL_SOURCES[x]["pretty_print"], key="fuel")
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
