@@ -60,8 +60,6 @@ FUEL_SOURCES = {
     },
 }
 
-
-
 UPGRADE_SOURCES = {
     "ENCHANTED_WHEAT": {
         "pretty_print": "Enchanted Wheat",
