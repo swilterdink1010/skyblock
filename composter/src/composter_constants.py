@@ -119,8 +119,6 @@ UPGRADE_SOURCES = {
     },
 }
 
-MAX_UPGRADE_LEVEL = 25
-
 BASE_CRAFT_TIME = 600 # seconds
 
 BASE_FUEL_COST = 2000 # per craft

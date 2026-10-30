@@ -85,7 +85,8 @@ def upg_to_target_uptime(uptime: int) -> ComposterState:
     state = ComposterStateFromSession()
     relevant_upg = ["fuel_cap", "organic_matter_cap", "cost_reduction"]
     while (state.sim_composter()[0] < uptime and not state.is_maxed(*relevant_upg)):
-        best_dur = 0
+        initial_time = state.sim_composter()[0]
+        best_value = float("inf")
         best_upg = state
         
         for upg in relevant_upg:
@@ -94,13 +95,19 @@ def upg_to_target_uptime(uptime: int) -> ComposterState:
             
             temp = copy.deepcopy(state)
             setattr(temp, upg, getattr(temp, upg)+1)
-            dur = temp.sim_composter()[0]
+            cost = coins_to_upgrade(*mats_to_upgrade(state, temp))
+            dur = temp.sim_composter()[0]-initial_time
             
-            if dur > best_dur:
-                best_dur = dur
+            if dur == 0:
+                continue
+            
+            if cost/dur < best_value:
+                best_value = cost/dur
                 best_upg = temp
         
-        state = best_upg
+        if state != best_upg:
+            state = best_upg
+        else: return state
     
     return state
 
@@ -121,6 +128,14 @@ def mats_to_upgrade(state: ComposterState, upgraded: ComposterState):
             items[gen_id] = items.get(gen_id, 0) + gen_count
     
     return items, copper
+                
+                
+def coins_to_upgrade(items: dict, copper: int, copper_value: int = 0):
+    total_cost = 0
+    for item in items.keys():
+        total_cost += get_bz_price(item) * items[item]
+    total_cost += copper * copper_value
+    return total_cost
                 
                 
 def numerize(val: int):
@@ -181,7 +196,7 @@ def main():
             if profiles[profile]["profile_id"] == st.session_state.profile_id:
                 profile_data = profiles[profile]
     
-    st.session_state.attr = profile_data["members"][uuid].get("attributes", {})
+    st.session_state.attr = profile_data["members"][uuid].get("attributes", {}) # type: ignore
     st.session_state.bz = get_bz_cached()
     st.session_state.garden = get_garden_cached(st.session_state.profile_id)
     init_composter_data()
@@ -193,12 +208,12 @@ def main():
     
     with values_col:
         st.tabs([""])
-        st.number_input("Composter Speed:", min_value=0, max_value=25, key="speed")
-        st.number_input("Multi Drop:", min_value=0, max_value=25, key="multi_drop")
-        st.number_input("Fuel Cap:", min_value=0, max_value=25, key="fuel_cap")
-        st.number_input("Organic Matter Cap:", min_value=0, key="organic_matter_cap")
-        st.number_input("Cost Reduction:", min_value=0, key="cost_reduction")
-        st.number_input("Compost Speed Attribute Level:", min_value=0, key="speed_attribute")
+        st.number_input("Composter Speed:", min_value=0, max_value=cc.UPGRADE_CAP["speed"], key="speed")
+        st.number_input("Multi Drop:", min_value=0, max_value=cc.UPGRADE_CAP["multi_drop"], key="multi_drop")
+        st.number_input("Fuel Cap:", min_value=0, max_value=cc.UPGRADE_CAP["fuel_cap"], key="fuel_cap")
+        st.number_input("Organic Matter Cap:", min_value=0, max_value=cc.UPGRADE_CAP["organic_matter_cap"], key="organic_matter_cap")
+        st.number_input("Cost Reduction:", min_value=0, max_value=cc.UPGRADE_CAP["cost_reduction"], key="cost_reduction")
+        st.number_input("Compost Speed Attribute Level:", min_value=0, max_value=cc.UPGRADE_CAP["speed_attribute"], key="speed_attribute")
         st.button("Reset", key="reset_composter")
     
     with content_col:
