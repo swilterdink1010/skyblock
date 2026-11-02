@@ -208,16 +208,18 @@ def main():
     
     with values_col:
         st.tabs([""])
-        st.number_input("Composter Speed:", min_value=0, max_value=cc.UPGRADE_CAP["speed"], key="speed")
-        st.number_input("Multi Drop:", min_value=0, max_value=cc.UPGRADE_CAP["multi_drop"], key="multi_drop")
-        st.number_input("Fuel Cap:", min_value=0, max_value=cc.UPGRADE_CAP["fuel_cap"], key="fuel_cap")
-        st.number_input("Organic Matter Cap:", min_value=0, max_value=cc.UPGRADE_CAP["organic_matter_cap"], key="organic_matter_cap")
-        st.number_input("Cost Reduction:", min_value=0, max_value=cc.UPGRADE_CAP["cost_reduction"], key="cost_reduction")
-        st.number_input("Compost Speed Attribute Level:", min_value=0, max_value=cc.UPGRADE_CAP["speed_attribute"], key="speed_attribute")
+        for upgrade in cc.UPGRADE_TYPES:
+            st.number_input(
+                cc.UPGRADE_NAMES[upgrade]+":", 
+                min_value=0,
+                max_value=cc.UPGRADE_CAP[upgrade],
+                key=upgrade
+            )
         st.button("Reset", key="reset_composter")
     
     with content_col:
-        upgrade_tab, sim_tab, uptime_tab = st.tabs(["Best Value Upgrades", "Compost Rates", "Target Uptime Upgrades"])
+        upgrade_tab, sim_tab, uptime_tab, bottomline_tab \
+            = st.tabs(["Best Value Upgrades", "Compost Rates", "Target Uptime Upgrades", "Bottom Line Upgrades"])
         with upgrade_tab:
             valid_upgrades = []
             for upgrade in cc.UPGRADE_TYPES:
@@ -332,7 +334,8 @@ def main():
                                 with cols3[3]:
                                     st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
                                     
-                
+        with bottomline_tab:
+            pass
 
 if __name__ == "__main__":
     main()

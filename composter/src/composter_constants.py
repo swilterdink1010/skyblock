@@ -1,4 +1,12 @@
-UPGRADE_TYPES = ["speed", "multi_drop", "fuel_cap", "organic_matter_cap", "cost_reduction", "speed_attribute"]
+UPGRADE_TYPES = ["speed", "multi_drop", "fuel_cap", "organic_matter_cap", "cost_reduction", "speed_attribute",]
+UPGRADE_NAMES = {
+    "speed": "Composter Speed", 
+    "multi_drop": "Multi Drop", 
+    "fuel_cap": "Fuel Cap", 
+    "organic_matter_cap": "Organic Matter Cap", 
+    "cost_reduction": "Cost Reduction", 
+    "speed_attribute": "Compost Speed Attribute Level",
+}
 
 ATTRIBUTE_RARITIES = ["common", "uncommon", "rare", "epic", "legendary"]
 
