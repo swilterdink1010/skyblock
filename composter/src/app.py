@@ -1,6 +1,7 @@
 import hyapi, copy, math
 import composter_constants as cc
 from composter_state import ComposterState
+from media import MEDIA_LINKS
 import streamlit as st
         
 def st_get(key: str, default = None):
@@ -179,6 +180,8 @@ def main():
     init_composter_data()
     
     # WEBSITE CONTENT
+    state = ComposterStateFromSession()
+    
     st.title("Composter Tools")
     
     values_col, content_col = st.columns([1, 4])
@@ -200,7 +203,7 @@ def main():
         with upgrade_tab:
             valid_upgrades = []
             for upgrade in cc.UPGRADE_TYPES:
-                if not ComposterStateFromSession().is_maxed(upgrade):
+                if not state.is_maxed(upgrade):
                     valid_upgrades.append(upgrade)
                     
             upgrade_states = {}
@@ -213,11 +216,9 @@ def main():
             with st.columns(1, vertical_alignment="center", border=True)[0]:
                 left, mid, right = st.columns([1, 1, 1])
                 
-                state = ComposterStateFromSession()
-                
                 with mid:
                     with st.columns(1, border=True)[0]:
-                        st.image("https://hypixelskyblock.minecraft.wiki/images/Composter_%28system%29.png?77ef3")
+                        st.image(MEDIA_LINKS.composter_img)
                 
                 with left:
                     st.markdown(f"### :green[Fuel Cap]<br>{state.get_value("fuel_cap")}", text_alignment="center", unsafe_allow_html=True)
@@ -276,10 +277,10 @@ def main():
                     
                 with cols[1]:
                     with st.columns(1, border=True)[0]:
-                        st.image("https://hypixelskyblock.minecraft.wiki/images/Composter_%28system%29.png?77ef3")
+                        st.image(MEDIA_LINKS.composter_img)
                 
                 with st.columns(1, border=True, vertical_alignment="center")[0]:
-                    items, copper = mats_to_upgrade(ComposterStateFromSession(), upg_state)
+                    items, copper = mats_to_upgrade(state, upg_state)
                     total_cost = 0
                     for item in items.keys():
                         total_cost += get_bz_price_cached(item) * items[item]
@@ -301,7 +302,14 @@ def main():
                                     st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
                                     
         with bottomline_tab:
-            pass
+            with st.columns(1, vertical_alignment="center", border=True)[0]:
+                with st.columns([1,2,1], vertical_alignment="center")[1]:
+                    mode = st.pills("mode", ["Profit/hr", "Refill"], default="Profit/hr", selection_mode="single", required=True, width="stretch", label_visibility="collapsed")
+                    
+                if mode == "Profit/hr":
+                    st.markdown(f"### Current Profit Per Hour: :{"green" if state.get_profit_hr(fuel, matter) > 0 else "red"}[{round(state.get_profit_hr(fuel, matter), 1):,}]", text_alignment="center")
+                if mode == "Refill":
+                    st.markdown(f"### Current Profit Per Refill: :{"green" if state.get_profit_refill(fuel, matter) > 0 else "red"}[{round(state.get_profit_refill(fuel, matter), 1):,}]", text_alignment="center")
 
 if __name__ == "__main__":
     main()
