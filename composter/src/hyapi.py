@@ -1,3 +1,5 @@
+from typing import Mapping
+
 import requests, os
 
 from dotenv import load_dotenv
@@ -16,7 +18,7 @@ def get_uuid(username: str):
     
     
 def get_profiles(uuid: str):
-    response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid})
+    response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid}) # type: ignore
     if response.status_code == 200:
         return response.json()["profiles"]
     else: raise RuntimeError(f"Could not get profile data <{response.status_code}> [{response.content}]")
@@ -32,14 +34,14 @@ def get_profile_id(profile_name: str, uuid: str, profiles: dict = None): # type:
 
 
 def get_garden_data(profile_id: str):
-    response = requests.get("https://api.hypixel.net/v2/skyblock/garden", headers=HEADERS, params={"profile": profile_id})
+    response = requests.get("https://api.hypixel.net/v2/skyblock/garden", headers=HEADERS, params={"profile": profile_id}) # type: ignore
     if response.status_code == 200:
         return response.json()["garden"]
     else: raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
 
 
 def get_bz_data():
-    response = requests.get("https://api.hypixel.net/v2/skyblock/bazaar", headers=HEADERS)
+    response = requests.get("https://api.hypixel.net/v2/skyblock/bazaar", headers=HEADERS) # type: ignore
     if response.status_code == 200:
         return response.json()["products"]
     else: raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
