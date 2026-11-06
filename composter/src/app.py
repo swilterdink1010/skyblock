@@ -23,9 +23,15 @@ def attr_stacks_to_level(stacks: int, rarity: str) -> Tuple[int, int]:
 
 
 def init_session_state():
-    if "profile_id" not in st.session_state:
-        st.session_state.profile_id = ""
-
+    INIT_VALUES: dict[str, Any] = {
+        "profile_id": "",
+        "buy_mode": "instant",
+        "sell_mode": "instant",
+    }
+    for key in INIT_VALUES:
+        if key not in st.session_state:
+            st.session_state[key] = INIT_VALUES[key]
+        
 
 def init_composter_data():
     if (st_get("last_profile") != st.session_state.profile_id) or st_get("reset_composter", False):
@@ -131,7 +137,7 @@ def _set_sell_mode(widget: str) -> None:
     
 
 def sell_mode_pills(key: str) -> hyapi.SellMode:
-    st.session_state[key] = st_get("sell_mode", "instant")
+    st.session_state[key] = st_get("sell_mode")
     st.pills(
         "sell_mode", 
         hyapi.SELL_PRICE_FIELD.keys(), 
@@ -152,7 +158,7 @@ def _set_buy_mode(widget: str) -> None:
     
 
 def buy_mode_pills(key: str) -> hyapi.BuyMode:
-    st.session_state[key] = st_get("buy_mode", "instant")
+    st.session_state[key] = st_get("buy_mode")
     st.pills(
         "sell_mode", 
         hyapi.BUY_PRICE_FIELD.keys(), 
@@ -245,8 +251,8 @@ def main():
                 sim_tab_profit_per_hour, sim_tab_compost_cost = st.columns([1, 1], vertical_alignment="center")
                 
                 with sim_tab_profit_per_hour:
-                    profit_hr = state.get_profit_hr(fuel, matter, buy_mode=st_get("buy_mode", "instant"), sell_mode=st_get("sell_mode", "instant"))
-                    profit_refill = state.get_profit_refill(fuel, matter, buy_mode=st_get("buy_mode", "instant"), sell_mode=st_get("sell_mode", "instant"))
+                    profit_hr = state.get_profit_hr(fuel, matter, buy_mode=st_get("buy_mode"), sell_mode=st_get("sell_mode"))
+                    profit_refill = state.get_profit_refill(fuel, matter, buy_mode=st_get("buy_mode"), sell_mode=st_get("sell_mode"))
                     st.markdown(f"### :rainbow[Profit Per Hour]<br>:orange[{round(profit_hr, 1):,}]<br>:blue[Profit Per Refill]<br>:orange[{round(profit_refill, 1):,}]", text_alignment="center", unsafe_allow_html=True)
                 
                 with sim_tab_compost_cost:
@@ -256,7 +262,7 @@ def main():
                         sim_tab_compost_cost_price, sim_tab_compost_cost_img = st.columns([1,1], vertical_alignment="center")
                         
                         with sim_tab_compost_cost_price:
-                            st.markdown(f"##### Compost Sell Price<br>:orange[{round(hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[st_get("sell_mode", "instant")]), 1):,}]", text_alignment="center", unsafe_allow_html=True)
+                            st.markdown(f"##### Compost Sell Price<br>:orange[{round(hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[st_get("sell_mode")]), 1):,}]", text_alignment="center", unsafe_allow_html=True)
                         with sim_tab_compost_cost_img:
                             with st.columns(1, border=True)[0]:
                                 st.image(MEDIA_LINKS.compost_img)
@@ -272,7 +278,7 @@ def main():
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
-                            f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter, buy_mode=st_get("buy_mode", "instant")), 1):,}]"
+                            f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter, buy_mode=st_get("buy_mode")), 1):,}]"
                         with txt_col[1]:
                             f":gray[x{state.get_matter_items_refill(matter)}]"
                     
@@ -281,7 +287,7 @@ def main():
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
-                            f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel, buy_mode=st_get("buy_mode", "instant")), 1):,}]"
+                            f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel, buy_mode=st_get("buy_mode")), 1):,}]"
                         with txt_col[1]:
                             f":gray[x{state.get_fuel_items_refill(fuel)}]"
                 
@@ -337,10 +343,10 @@ def main():
                     mode = st.pills("mode", ["Profit/hr", "Refill"], default="Profit/hr", selection_mode="single", required=True, width="stretch", label_visibility="collapsed")
                     
                 if mode == "Profit/hr":
-                    st.markdown(f"### Current Profit Per Hour: :{"green" if state.get_profit_hr(fuel, matter) > 0 else "red"}[{round(state.get_profit_hr(fuel, matter), 1):,}]", text_alignment="center")
+                    st.markdown(f"### Current Profit Per Hour: :{"green" if profit_hr > 0 else "red"}[{round(profit_hr, 1):,}]", text_alignment="center")
                     
                 if mode == "Refill":
-                    st.markdown(f"### Current Profit Per Refill: :{"green" if state.get_profit_refill(fuel, matter) > 0 else "red"}[{round(state.get_profit_refill(fuel, matter), 1):,}]", text_alignment="center")
+                    st.markdown(f"### Current Profit Per Refill: :{"green" if profit_refill > 0 else "red"}[{round(profit_refill, 1):,}]", text_alignment="center")
 
 if __name__ == "__main__":
     main()
