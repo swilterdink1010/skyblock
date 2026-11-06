@@ -2,12 +2,15 @@ import hyapi, copy, math
 import composter_constants as cc
 from composter_state import ComposterState
 from media import MEDIA_LINKS
+from typing import Any, Tuple
 import streamlit as st
-        
-def st_get(key: str, default = None):
+
+
+def st_get(key: str, default: Any = None):
     return st.session_state.get(key, default)
 
-def attr_stacks_to_level(stacks: int, rarity: str):
+
+def attr_stacks_to_level(stacks: int, rarity: str) -> Tuple[int, int]:
     if rarity not in cc.ATTRIBUTE_RARITIES:
         raise KeyError(f"Invalid input: {rarity}")
     stack_sum = 0
@@ -20,8 +23,6 @@ def attr_stacks_to_level(stacks: int, rarity: str):
 
 
 def init_session_state():
-    if "api" not in st.session_state:
-        st.session_state.api = { "bz": hyapi.get_bz_data(), }
     if "profile_id" not in st.session_state:
         st.session_state.profile_id = ""
 
@@ -36,31 +37,11 @@ def init_composter_data():
         st.session_state.last_profile = st.session_state.profile_id
         
         
-class ComposterStateFromSession(ComposterState):
-    def __init__(self):
-        super().__init__(*[st_get(upg, 0) for upg in cc.UPGRADE_TYPES])
-        
-    def get_fuel_cost_hr(self, fuel_source: str):
-            return get_bz_price_cached(fuel_source)*self.get_fuel_items_hr(fuel_source)
-        
-    def get_fuel_cost_refill(self, fuel_source: str):
-            return get_bz_price_cached(fuel_source)*self.get_fuel_items_refill(fuel_source)
-        
-    def get_matter_cost_hr(self, matter_source: str):
-            return get_bz_price_cached(matter_source)*self.get_matter_items_hr(matter_source)
-        
-    def get_matter_cost_refill(self, matter_source: str):
-            return get_bz_price_cached(matter_source)*self.get_matter_items_refill(matter_source)
-        
-    def get_compost_value_hr(self):
-            return get_bz_price_cached("COMPOST")*self.get_compost_generated_hr()
-        
-    def get_compost_value_refill(self):
-            return get_bz_price_cached("COMPOST")*self.sim_composter()[1]
+def composter_state_from_session() -> ComposterState:
+    return ComposterState(*[st_get(upg, 0) for upg in cc.UPGRADE_TYPES])
 
 
-def upg_to_target_uptime(uptime: int) -> ComposterState:
-    state = ComposterStateFromSession()
+def upg_to_target_uptime(uptime: int, state: ComposterState = composter_state_from_session()) -> ComposterState:
     relevant_upg = ["fuel_cap", "organic_matter_cap", "cost_reduction"]
     while (state.sim_composter()[0] < uptime and not state.is_maxed(*relevant_upg)):
         initial_time = state.sim_composter()[0]
@@ -90,11 +71,11 @@ def upg_to_target_uptime(uptime: int) -> ComposterState:
     return state
 
 
-def mats_to_upgrade(state: ComposterState, upgraded: ComposterState):
+def mats_to_upgrade(state: ComposterState, upgraded_state: ComposterState):
     items = {}
     copper = 0
     for upg in cc.UPGRADE_TYPES:
-        for i in range(getattr(state, upg), getattr(upgraded, upg)):
+        for i in range(getattr(state, upg), getattr(upgraded_state, upg)):
             id = cc.UPGRADE_COST[upg][i]["id"]
             count = cc.UPGRADE_COST[upg][i]["count"]
             
@@ -111,33 +92,22 @@ def mats_to_upgrade(state: ComposterState, upgraded: ComposterState):
 def coins_to_upgrade(items: dict, copper: int, copper_value: int = 0):
     total_cost = 0
     for item in items.keys():
-        total_cost += get_bz_price_cached(item) * items[item]
+        total_cost += hyapi.get_bz_price(item) * items[item]
     total_cost += copper * copper_value
     return total_cost
                 
                 
-def numerize(val: int):
+def numerize(val: float) -> str:
     if val >= 1000000000: return f"{round(val/1000000000, 1)}b"
     if val > 1000000: return f"{round(val/1000000, 1)}m"
     if val > 1000: return f"{round(val/1000, 1)}k"
-    return round(val, 1)
+    return str(round(val, 1))
 
 
 def time_to_str(time: float):
     mins, secs = divmod(time, 60)
     hrs, mins = divmod(mins, 60)
     return f"{int(hrs)}:{int(mins):02d}:{int(secs):02d}"
-        
-
-def get_bz_price_cached(id: str):
-    if not st.session_state.bz.get(id):
-        raise KeyError(f"Invalid input: {id}")
-    return st.session_state.bz[id]["quick_status"]["buyPrice"]
-
-
-@st.cache_data(ttl=300)
-def get_bz_cached():
-    return hyapi.get_bz_data()    
 
 
 @st.cache_data
@@ -175,12 +145,11 @@ def main():
                 profile_data = profiles[profile]
     
     st.session_state.attr = profile_data["members"][uuid].get("attributes", {}) # type: ignore
-    st.session_state.bz = get_bz_cached()
     st.session_state.garden = get_garden_cached(st.session_state.profile_id)
     init_composter_data()
     
     # WEBSITE CONTENT
-    state = ComposterStateFromSession()
+    state = composter_state_from_session()
     
     st.title("Composter Tools")
     
@@ -209,7 +178,7 @@ def main():
             upgrade_states = {}
             for upgrade in valid_upgrades:
                 upgrade_states[upgrade] = {
-                    
+                    # UNIMPLEMENTED
                 }
                     
         with sim_tab:
@@ -262,7 +231,7 @@ def main():
                 with cols[0]:
                     target_uptime = st.time_input("Target Uptime:", "04:00:00")
                     uptime_seconds = target_uptime.hour*3600 + target_uptime.minute*60 + target_uptime.second
-                    upg_state = upg_to_target_uptime(uptime_seconds)
+                    upg_state = upg_to_target_uptime(uptime_seconds, state)
                     
                     cols2 = st.columns(3, border=True, vertical_alignment="center")
                     
@@ -283,14 +252,14 @@ def main():
                     items, copper = mats_to_upgrade(state, upg_state)
                     total_cost = 0
                     for item in items.keys():
-                        total_cost += get_bz_price_cached(item) * items[item]
+                        total_cost += hyapi.get_bz_price(item) * items[item]
                         
                     st.markdown(f"## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>Copper Cost: :red[{copper:,}]", text_alignment="center", unsafe_allow_html=True)
                     
                     with st.expander("Items"):
                         for id in items.keys():
                             with st.columns(1, border=True, vertical_alignment="center")[0]:
-                                price = get_bz_price_cached(id)
+                                price = hyapi.get_bz_price(id)
                                 cols3 = st.columns([7, 2, 2, 3])
                                 with cols3[0]:
                                     st.markdown(f"{cc.UPGRADE_SOURCES[id]["pretty_print"]}", text_alignment="left")
@@ -308,6 +277,7 @@ def main():
                     
                 if mode == "Profit/hr":
                     st.markdown(f"### Current Profit Per Hour: :{"green" if state.get_profit_hr(fuel, matter) > 0 else "red"}[{round(state.get_profit_hr(fuel, matter), 1):,}]", text_alignment="center")
+                    
                 if mode == "Refill":
                     st.markdown(f"### Current Profit Per Refill: :{"green" if state.get_profit_refill(fuel, matter) > 0 else "red"}[{round(state.get_profit_refill(fuel, matter), 1):,}]", text_alignment="center")
 

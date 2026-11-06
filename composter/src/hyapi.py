@@ -1,30 +1,30 @@
-from typing import Mapping
-
-import requests, os
-
+import requests, os, time
+from typing import Literal
 from dotenv import load_dotenv
-load_dotenv()
 
+load_dotenv()
 HYPIXEL_API_KEY = os.getenv("HYPIXEL_API_KEY")
+if not HYPIXEL_API_KEY:
+    raise RuntimeError("HYPIXEL_API_KEY is not set")
 HEADERS = {
     "API-Key": HYPIXEL_API_KEY,
 }
 
-def get_uuid(username: str):
+def get_uuid(username: str) -> str:
     response = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{username}")
     if response.status_code == 200:
         return response.json()["id"]
     else: raise RuntimeError(f"Could not get UUID <{response.status_code}> [{response.content}]")
     
     
-def get_profiles(uuid: str):
-    response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid}) # type: ignore
+def get_profiles(uuid: str) -> dict:
+    response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid})
     if response.status_code == 200:
         return response.json()["profiles"]
     else: raise RuntimeError(f"Could not get profile data <{response.status_code}> [{response.content}]")
     
     
-def get_profile_id(profile_name: str, uuid: str, profiles: dict = None): # type: ignore
+def get_profile_id(profile_name: str, uuid: str, profiles: dict | None = None) -> str:
     if profiles is None:
         profiles = get_profiles(uuid)
     for profile in profiles:
@@ -33,25 +33,35 @@ def get_profile_id(profile_name: str, uuid: str, profiles: dict = None): # type:
     raise KeyError(f"Could not find profile {profile_name} in user profiles")
 
 
-def get_garden_data(profile_id: str):
-    response = requests.get("https://api.hypixel.net/v2/skyblock/garden", headers=HEADERS, params={"profile": profile_id}) # type: ignore
+def get_garden_data(profile_id: str) -> dict:
+    response = requests.get("https://api.hypixel.net/v2/skyblock/garden", headers=HEADERS, params={"profile": profile_id})
     if response.status_code == 200:
         return response.json()["garden"]
     else: raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
 
+_bz_cache = {
+    "timestamp": float("-inf"),
+    "data": {},
+}
+def get_bz_data(data_lifetime: int = 300) -> dict:
+    if time.monotonic() - _bz_cache["timestamp"] >= data_lifetime:
+        response = requests.get("https://api.hypixel.net/v2/skyblock/bazaar", headers=HEADERS)
+        if response.status_code == 200:
+            _bz_cache["timestamp"] = time.monotonic()
+            _bz_cache["data"] = response.json()["products"]
+        else: raise RuntimeError(f"Could not get bazaar data <{response.status_code}> [{response.content}]")
+    return _bz_cache["data"]
 
-def get_bz_data():
-    response = requests.get("https://api.hypixel.net/v2/skyblock/bazaar", headers=HEADERS) # type: ignore
-    if response.status_code == 200:
-        return response.json()["products"]
-    else: raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
+
+def get_bz_price(id: str, attr: Literal["buyPrice", "sellPrice"] = "buyPrice") -> float:
+    print(get_bz_data()[id]["quick_status"])
+    if not get_bz_data().get(id):
+        raise KeyError(f"Invalid input: {id}")
+    return get_bz_data()[id]["quick_status"][attr]
 
 
-def main():
-    uuid = get_uuid("bigman7305")
-    profile = get_profile_id("Peach", uuid)
-    print(get_garden_data(profile)["composter_data"]["upgrades"])
-    
+def main() -> None:
+    pass
     
 if __name__ == "__main__":
     main()
