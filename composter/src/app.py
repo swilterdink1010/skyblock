@@ -1,8 +1,8 @@
-import hyapi, copy, math
+import hyapi, copy
 import composter_constants as cc
 from composter_state import ComposterState
 from media import MEDIA_LINKS
-from typing import Any, Tuple
+from typing import Any, Tuple, cast
 import streamlit as st
 
 
@@ -126,6 +126,48 @@ def get_garden_cached(profile_id: str):
     return hyapi.get_garden_data(profile_id)
 
 
+def _set_sell_mode(widget: str) -> None:
+    st.session_state["sell_mode"] = st.session_state[widget]
+    
+
+def sell_mode_pills(key: str) -> hyapi.SellMode:
+    st.session_state[key] = st_get("sell_mode", "instant")
+    st.pills(
+        "sell_mode", 
+        hyapi.SELL_PRICE_FIELD.keys(), 
+        selection_mode="single", 
+        required=True, 
+        format_func=hyapi.SELL_MODE_LABELS.__getitem__, 
+        width="stretch", 
+        label_visibility="collapsed", 
+        key=key, 
+        on_change=_set_sell_mode, 
+        args=(key,)
+    )
+    return cast(hyapi.SellMode, st.session_state[key])
+
+
+def _set_buy_mode(widget: str) -> None:
+    st.session_state["buy_mode"] = st.session_state[widget]
+    
+
+def buy_mode_pills(key: str) -> hyapi.BuyMode:
+    st.session_state[key] = st_get("buy_mode", "instant")
+    st.pills(
+        "sell_mode", 
+        hyapi.BUY_PRICE_FIELD.keys(), 
+        selection_mode="single", 
+        required=True, 
+        format_func=hyapi.BUY_MODE_LABELS.__getitem__, 
+        width="stretch", 
+        label_visibility="collapsed", 
+        key=key, 
+        on_change=_set_buy_mode, 
+        args=(key,)
+    )
+    return cast(hyapi.BuyMode, st.session_state[key])
+    
+
 def main():
     # DATA LOADING
     st.markdown("<style>[data-testid='stHeaderActionElements'] {display: none;}</style>", unsafe_allow_html=True)
@@ -209,26 +251,20 @@ def main():
                 
                 with sim_tab_compost_cost:
                     with st.columns(1, vertical_alignment="center", border=True)[0]:
-                        SELL_MODE_LABELS = {
-                            "instant": "Instant Sell",
-                            "offer": "Sell Offer",
-                        }
-                        st.pills("sell_mode", ["instant", "offer"], default="instant", selection_mode="single", required=True, format_func=SELL_MODE_LABELS.__getitem__, width="stretch", label_visibility="collapsed", key="sell_mode")
+                        sell_mode_pills("sim_tab_compost_cost")
+                        
                         sim_tab_compost_cost_price, sim_tab_compost_cost_img = st.columns([1,1], vertical_alignment="center")
+                        
                         with sim_tab_compost_cost_price:
-                            st.markdown(f"##### Compost Sell Price<br>:orange[{round(hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[st_get("sell_mode")]), 1):,}]", text_alignment="center", unsafe_allow_html=True)
+                            st.markdown(f"##### Compost Sell Price<br>:orange[{round(hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[st_get("sell_mode", "instant")]), 1):,}]", text_alignment="center", unsafe_allow_html=True)
                         with sim_tab_compost_cost_img:
                             with st.columns(1, border=True)[0]:
                                 st.image(MEDIA_LINKS.compost_img)
                 
                 with st.columns(1, border=True)[0]:
-                    BUY_MODE_LABELS = {
-                        "instant": "Instant Buy",
-                        "order": "Buy Order",
-                    }
                     with st.columns([1,2,1])[1]:
-                        st.pills("buy_mode", ["instant", "order"], default="instant", selection_mode="single", required=True, format_func=BUY_MODE_LABELS.__getitem__, width="stretch", label_visibility="collapsed", key="buy_mode")
-                    
+                        buy_mode_pills("sim_tab_materials")
+                        
                     matter_col, fuel_col = st.columns(2)
                     
                     with matter_col:
@@ -236,7 +272,7 @@ def main():
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
-                            f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter, buy_mode=st_get("buy_mode")), 1):,}]"
+                            f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter, buy_mode=st_get("buy_mode", "instant")), 1):,}]"
                         with txt_col[1]:
                             f":gray[x{state.get_matter_items_refill(matter)}]"
                     
@@ -245,7 +281,7 @@ def main():
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
-                            f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel, buy_mode=st_get("buy_mode")), 1):,}]"
+                            f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel, buy_mode=st_get("buy_mode", "instant")), 1):,}]"
                         with txt_col[1]:
                             f":gray[x{state.get_fuel_items_refill(fuel)}]"
                 

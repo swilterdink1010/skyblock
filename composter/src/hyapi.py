@@ -47,6 +47,15 @@ BUY_PRICE_FIELD: dict[BuyMode, PriceField] = {
     "instant": "buyPrice",
     "order": "sellPrice",
 }
+BUY_MODE_LABELS: dict[BuyMode, str] = {
+    "instant": "Instant Sell", 
+    "order": "Buy Order"
+}
+
+SELL_MODE_LABELS: dict[SellMode, str] = {
+    "instant": "Instant Sell", 
+    "offer": "Sell Offer"
+}
 SELL_PRICE_FIELD: dict[SellMode, PriceField] = {
     "instant": "sellPrice",
     "offer": "buyPrice",
