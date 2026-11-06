@@ -255,8 +255,7 @@ def main():
                     profit_hr = state.get_profit_hr(fuel, matter, buy_mode=st.session_state["buy_mode"], sell_mode=st.session_state["sell_mode"])
                     profit_refill = state.get_profit_refill(fuel, matter, buy_mode=st.session_state["buy_mode"], sell_mode=st.session_state["sell_mode"])
                     st.markdown(f"""
-                        ### :rainbow[Profit Per Hour]<br>:orange[{round(profit_hr, 1):,}]<br>
-                        :blue[Profit Per Refill]<br>:orange[{round(profit_refill, 1):,}]
+                        ### :rainbow[Profit Per Hour]<br>:orange[{round(profit_hr, 1):,}]<br>:blue[Profit Per Refill]<br>:orange[{round(profit_refill, 1):,}]
                         """, text_alignment="center", unsafe_allow_html=True
                     )
                 
@@ -313,22 +312,19 @@ def main():
                     
                     with cols2[0]:
                         st.markdown(f"""
-                            ###### :green[Fuel Cap]<br> 
-                            {upg_state.fuel_cap}
+                            ###### :green[Fuel Cap]<br>{upg_state.fuel_cap}
                             """, text_alignment="center", unsafe_allow_html=True
                         )
                     
                     with cols2[1]:
                         st.markdown(f"""
-                            ###### :yellow[Organic Matter Cap]<br>
-                            {upg_state.organic_matter_cap}
+                            ###### :yellow[Organic Matter Cap]<br>{upg_state.organic_matter_cap}
                             """, text_alignment="center", unsafe_allow_html=True
                         )
                     
                     with cols2[2]:
                         st.markdown(f"""
-                            ###### :orange[Cost Reduction]<br>
-                            {upg_state.cost_reduction}
+                            ###### :orange[Cost Reduction]<br>{upg_state.cost_reduction}
                             """, text_alignment="center", unsafe_allow_html=True
                         )
                     
@@ -343,8 +339,7 @@ def main():
                         total_cost += hyapi.get_bz_price(item) * items[item]
                         
                     st.markdown(f"""
-                        ## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>
-                        Copper Cost: :red[{copper:,}]
+                        ## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>Copper Cost: :red[{copper:,}]
                         """, text_alignment="center", unsafe_allow_html=True
                     )
                     
