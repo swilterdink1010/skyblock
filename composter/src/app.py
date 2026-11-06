@@ -364,7 +364,7 @@ def main():
                                     
         with bottomline_tab:
             with st.columns(1, vertical_alignment="center", border=True)[0]:
-                bottomline_tab_buy_sell_selector, bottomline_tab_hr_refill_selector = st.columns([1,1], vertical_alignment="top")
+                bottomline_tab_buy_sell_selector, bottomline_tab_hr_refill_selector = st.columns([1,1], vertical_alignment="center")
                 
                 with bottomline_tab_buy_sell_selector:
                     with st.expander("Buy/Sell Modes"):
