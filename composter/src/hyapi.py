@@ -33,11 +33,35 @@ def get_profile_id(profile_name: str, uuid: str, profiles: dict | None = None) -
     raise KeyError(f"Could not find profile {profile_name} in user profiles")
 
 
-def get_garden_data(profile_id: str) -> dict:
-    response = requests.get("https://api.hypixel.net/v2/skyblock/garden", headers=HEADERS, params={"profile": profile_id})
-    if response.status_code == 200:
-        return response.json()["garden"]
-    else: raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
+_garden_cache = {}
+GARDEN_CACHE_LIMIT = 4
+def _garden_cache_drop() -> None:
+    min_timestamp = float("-inf")
+    to_remove = ""
+    for cached_profile_id in _garden_cache.keys():
+        if _garden_cache[cached_profile_id]["timestamp"] < min_timestamp:
+            min_timestamp = _garden_cache[cached_profile_id]["timestamp"]
+            to_remove = cached_profile_id
+    del _garden_cache[to_remove]
+    
+def get_garden_data(profile_id: str, data_lifetime: int = 300) -> dict:
+    if profile_id not in _garden_cache:
+        _garden_cache[profile_id] = {
+            "timestamp": float("-inf"),
+            "data": {},
+        }
+    if time.monotonic() - _garden_cache[profile_id]["timestamp"] >= data_lifetime:
+        response = requests.get("https://api.hypixel.net/v2/skyblock/garden", headers=HEADERS, params={"profile": profile_id})
+        if response.status_code == 200:
+            _garden_cache[profile_id]["timestamp"] = time.monotonic()
+            _garden_cache[profile_id]["data"] = response.json()["garden"]
+        else:
+            del _garden_cache[profile_id]
+            raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
+        if len(_garden_cache) == GARDEN_CACHE_LIMIT:
+            _garden_cache_drop()
+    return _garden_cache[profile_id]["data"]
+
 
 BuyMode = Literal["instant", "order"]
 SellMode = Literal["instant", "offer"]
