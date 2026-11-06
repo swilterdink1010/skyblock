@@ -188,11 +188,12 @@ def main():
         uuid, profiles = get_profiles_cached(st.session_state.ign)
         st.selectbox("Profile:", [profile["cute_name"] for profile in profiles], key="selected_profile")
         st.session_state.profile_id = hyapi.get_profile_id(st.session_state.selected_profile, uuid, profiles=profiles)
+        profile_data = {}
         for profile in range(0, len(profiles)):
             if profiles[profile]["profile_id"] == st.session_state.profile_id:
                 profile_data = profiles[profile]
     
-    st.session_state.attr = profile_data["members"][uuid].get("attributes", {}) # type: ignore
+    st.session_state.attr = profile_data["members"][uuid].get("attributes", {})
     st.session_state.garden = get_garden_cached(st.session_state.profile_id)
     init_composter_data()
     
