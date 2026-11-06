@@ -39,6 +39,19 @@ def get_garden_data(profile_id: str) -> dict:
         return response.json()["garden"]
     else: raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
 
+BuyMode = Literal["instant", "order"]
+SellMode = Literal["instant", "offer"]
+PriceField = Literal["buyPrice", "sellPrice"]
+
+BUY_PRICE_FIELD: dict[BuyMode, PriceField] = {
+    "instant": "buyPrice",
+    "order": "sellPrice",
+}
+SELL_PRICE_FIELD: dict[SellMode, PriceField] = {
+    "instant": "sellPrice",
+    "offer": "buyPrice",
+}
+
 _bz_cache = {
     "timestamp": float("-inf"),
     "data": {},
@@ -53,11 +66,10 @@ def get_bz_data(data_lifetime: int = 300) -> dict:
     return _bz_cache["data"]
 
 
-def get_bz_price(id: str, attr: Literal["buyPrice", "sellPrice"] = "buyPrice") -> float:
-    print(get_bz_data()[id]["quick_status"])
+def get_bz_price(id: str, field: Literal["buyPrice", "sellPrice"] = "buyPrice") -> float:
     if not get_bz_data().get(id):
         raise KeyError(f"Invalid input: {id}")
-    return get_bz_data()[id]["quick_status"][attr]
+    return get_bz_data()[id]["quick_status"][field]
 
 
 def main() -> None:

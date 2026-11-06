@@ -151,7 +151,7 @@ def main():
     # WEBSITE CONTENT
     state = composter_state_from_session()
     
-    st.title("Composter Tools")
+    st.title("Composter Tools", text_alignment="center")
     
     values_col, content_col = st.columns([1, 4])
     
@@ -190,20 +190,45 @@ def main():
                         st.image(MEDIA_LINKS.composter_img)
                 
                 with left:
-                    st.markdown(f"### :green[Fuel Cap]<br>{state.get_value("fuel_cap")}", text_alignment="center", unsafe_allow_html=True)
-                    st.markdown(f"### :yellow[Organic Matter Cap]<br>{state.get_value("organic_matter_cap")}", text_alignment="center", unsafe_allow_html=True)
+                    st.markdown(f"### :green[Fuel Cap]<br>{state.get_value("fuel_cap"):,}", text_alignment="center", unsafe_allow_html=True)
+                    st.markdown(f"### :yellow[Organic Matter Cap]<br>{state.get_value("organic_matter_cap"):,}", text_alignment="center", unsafe_allow_html=True)
                 
                 with right:
-                    time, output = state.sim_composter()
-                    st.markdown(f"### :blue[Runtime]<br>{time_to_str(time)}", text_alignment="center", unsafe_allow_html=True)
-                    st.markdown(f"### :red[Avg. Compost Per Hour]<br>{round(state.get_compost_generated_hr(), 2)}", text_alignment="center", unsafe_allow_html=True)
+                    st.markdown(f"### :blue[Runtime]<br>{time_to_str(state.sim_composter()[0])}", text_alignment="center", unsafe_allow_html=True)
+                    st.markdown(f"### :red[Avg. Compost Per Hour]<br>{round(state.get_compost_generated_hr(), 2):,}", text_alignment="center", unsafe_allow_html=True)
                 
                 matter = st_get("matter", next(iter(cc.ORGANIC_MATTER_SOURCES)))
                 fuel = st_get("fuel", next(iter(cc.FUEL_SOURCES)))
                 
-                st.markdown(f"## :rainbow[Profit Per Hour]: :orange[{round(state.get_profit_hr(fuel, matter), 1):,}]<br>:blue[Profit Per Refill]: :orange[{round(state.get_profit_refill(fuel, matter), 1):,}]", text_alignment="center", unsafe_allow_html=True)
+                sim_tab_profit_per_hour, sim_tab_compost_cost = st.columns([1, 1], vertical_alignment="center")
+                
+                with sim_tab_profit_per_hour:
+                    profit_hr = state.get_profit_hr(fuel, matter, buy_mode=st_get("buy_mode", "instant"), sell_mode=st_get("sell_mode", "instant"))
+                    profit_refill = state.get_profit_refill(fuel, matter, buy_mode=st_get("buy_mode", "instant"), sell_mode=st_get("sell_mode", "instant"))
+                    st.markdown(f"### :rainbow[Profit Per Hour]<br>:orange[{round(profit_hr, 1):,}]<br>:blue[Profit Per Refill]<br>:orange[{round(profit_refill, 1):,}]", text_alignment="center", unsafe_allow_html=True)
+                
+                with sim_tab_compost_cost:
+                    with st.columns(1, vertical_alignment="center", border=True)[0]:
+                        SELL_MODE_LABELS = {
+                            "instant": "Instant Sell",
+                            "offer": "Sell Offer",
+                        }
+                        st.pills("sell_mode", ["instant", "offer"], default="instant", selection_mode="single", required=True, format_func=SELL_MODE_LABELS.__getitem__, width="stretch", label_visibility="collapsed", key="sell_mode")
+                        sim_tab_compost_cost_price, sim_tab_compost_cost_img = st.columns([1,1], vertical_alignment="center")
+                        with sim_tab_compost_cost_price:
+                            st.markdown(f"##### Compost Sell Price<br>:orange[{round(hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[st_get("sell_mode")]), 1):,}]", text_alignment="center", unsafe_allow_html=True)
+                        with sim_tab_compost_cost_img:
+                            with st.columns(1, border=True)[0]:
+                                st.image(MEDIA_LINKS.compost_img)
                 
                 with st.columns(1, border=True)[0]:
+                    BUY_MODE_LABELS = {
+                        "instant": "Instant Buy",
+                        "order": "Buy Order",
+                    }
+                    with st.columns([1,2,1])[1]:
+                        st.pills("buy_mode", ["instant", "order"], default="instant", selection_mode="single", required=True, format_func=BUY_MODE_LABELS.__getitem__, width="stretch", label_visibility="collapsed", key="buy_mode")
+                    
                     matter_col, fuel_col = st.columns(2)
                     
                     with matter_col:
@@ -211,7 +236,7 @@ def main():
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
-                            f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter), 1):,}]"
+                            f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter, buy_mode=st_get("buy_mode")), 1):,}]"
                         with txt_col[1]:
                             f":gray[x{state.get_matter_items_refill(matter)}]"
                     
@@ -220,7 +245,7 @@ def main():
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
-                            f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel), 1):,}]"
+                            f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel, buy_mode=st_get("buy_mode")), 1):,}]"
                         with txt_col[1]:
                             f":gray[x{state.get_fuel_items_refill(fuel)}]"
                 

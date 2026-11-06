@@ -1,6 +1,6 @@
 import hyapi, math
 import composter_constants as cc
-from typing import Tuple
+from typing import Literal, Tuple
 
 
 class ComposterState:
@@ -38,16 +38,20 @@ class ComposterState:
         return (self.get_fuel_used_hr()/cc.FUEL_SOURCES[fuel_source]["value"])*cc.FUEL_SOURCES[fuel_source].get("count", 1)
     
     
-    def get_fuel_cost_hr(self, fuel_source: str) -> float:
-        return hyapi.get_bz_price(fuel_source)*self.get_fuel_items_hr(fuel_source)
+    def get_fuel_cost_hr(self, fuel_source: str, buy_mode: Literal["order", "instant"] = "instant") -> float:
+        if buy_mode not in hyapi.BUY_PRICE_FIELD:
+            raise ValueError(f"Invalid buy_mode {buy_mode!r}: expected 'instant' or 'order'")
+        return hyapi.get_bz_price(fuel_source, field=hyapi.BUY_PRICE_FIELD[buy_mode])*self.get_fuel_items_hr(fuel_source)
     
         
     def get_fuel_items_refill(self, fuel_source: str) -> int:
         return math.floor(self.get_value("fuel_cap")/cc.FUEL_SOURCES[fuel_source]["value"])*cc.FUEL_SOURCES[fuel_source].get("count", 1)
     
     
-    def get_fuel_cost_refill(self, fuel_source: str) -> float:
-        return hyapi.get_bz_price(fuel_source)*self.get_fuel_items_refill(fuel_source)
+    def get_fuel_cost_refill(self, fuel_source: str, buy_mode: Literal["instant", "order"] = "instant") -> float:
+        if buy_mode not in hyapi.BUY_PRICE_FIELD:
+            raise ValueError(f"Invalid buy_mode {buy_mode!r}: expected 'instant' or 'order'")
+        return hyapi.get_bz_price(fuel_source, field=hyapi.BUY_PRICE_FIELD[buy_mode])*self.get_fuel_items_refill(fuel_source)
     
     
     def get_matter_used_hr(self) -> float:
@@ -58,16 +62,20 @@ class ComposterState:
         return (self.get_matter_used_hr()/cc.ORGANIC_MATTER_SOURCES[matter_source]["value"])*cc.ORGANIC_MATTER_SOURCES[matter_source].get("count", 1)
     
     
-    def get_matter_cost_hr(self, matter_source: str) -> float:
-        return hyapi.get_bz_price(matter_source)*self.get_matter_items_hr(matter_source)
+    def get_matter_cost_hr(self, matter_source: str, buy_mode: Literal["instant", "order"] = "instant") -> float:
+        if buy_mode not in hyapi.BUY_PRICE_FIELD:
+            raise ValueError(f"Invalid buy_mode {buy_mode!r}: expected 'instant' or 'order'")
+        return hyapi.get_bz_price(matter_source, field=hyapi.BUY_PRICE_FIELD[buy_mode])*self.get_matter_items_hr(matter_source)
     
     
     def get_matter_items_refill(self, matter_source: str) -> int:
         return math.floor(self.get_value("organic_matter_cap")/cc.ORGANIC_MATTER_SOURCES[matter_source]["value"])*cc.ORGANIC_MATTER_SOURCES[matter_source].get("count", 1)
     
     
-    def get_matter_cost_refill(self, matter_source: str) -> float:
-        return hyapi.get_bz_price(matter_source)*self.get_matter_items_refill(matter_source)
+    def get_matter_cost_refill(self, matter_source: str, buy_mode: Literal["instant", "order"] = "instant") -> float:
+        if buy_mode not in hyapi.BUY_PRICE_FIELD:
+            raise ValueError(f"Invalid buy_mode {buy_mode!r}: expected 'instant' or 'order'")
+        return hyapi.get_bz_price(matter_source, field=hyapi.BUY_PRICE_FIELD[buy_mode])*self.get_matter_items_refill(matter_source)
     
     
     def get_compost_generated_hr(self) -> float:
@@ -75,20 +83,24 @@ class ComposterState:
         return 3600*output/time
     
     
-    def get_compost_value_hr(self) -> float:
-        return hyapi.get_bz_price("COMPOST")*self.get_compost_generated_hr()
+    def get_compost_value_hr(self, sell_mode: Literal["instant", "offer"] = "instant") -> float:
+        if sell_mode not in hyapi.SELL_PRICE_FIELD:
+            raise ValueError(f"Invalid sell mode {sell_mode!r}: expected 'instant' or 'offer'")
+        return hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[sell_mode])*self.get_compost_generated_hr()
     
     
-    def get_compost_value_refill(self) -> float:
-        return hyapi.get_bz_price("COMPOST")*self.sim_composter()[1]
+    def get_compost_value_refill(self, sell_mode: Literal["instant", "offer"] = "instant") -> float:
+        if sell_mode not in hyapi.SELL_PRICE_FIELD:
+            raise ValueError(f"Invalid sell mode {sell_mode!r}: expected 'instant' or 'offer'")
+        return hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[sell_mode])*self.sim_composter()[1]
     
     
-    def get_profit_hr(self, fuel_source: str, matter_source: str) -> float:
-        return self.get_compost_value_hr()-self.get_fuel_cost_hr(fuel_source)-self.get_matter_cost_hr(matter_source)
+    def get_profit_hr(self, fuel_source: str, matter_source: str, buy_mode: Literal["instant", "order"] = "instant", sell_mode: Literal["instant", "offer"] = "instant") -> float:
+        return self.get_compost_value_hr(sell_mode)-self.get_fuel_cost_hr(fuel_source, buy_mode)-self.get_matter_cost_hr(matter_source, buy_mode)
     
     
-    def get_profit_refill(self, fuel_source: str, matter_source: str) -> float:
-        return self.get_compost_value_refill()-self.get_fuel_cost_refill(fuel_source)-self.get_matter_cost_refill(matter_source)
+    def get_profit_refill(self, fuel_source: str, matter_source: str, buy_mode: Literal["instant", "order"] = "instant", sell_mode: Literal["instant", "offer"] = "instant") -> float:
+        return self.get_compost_value_refill(sell_mode)-self.get_fuel_cost_refill(fuel_source, buy_mode)-self.get_matter_cost_refill(matter_source, buy_mode)
     
     
     def is_maxed(self, *upgrades: str) -> bool:
