@@ -48,7 +48,7 @@ BUY_PRICE_FIELD: dict[BuyMode, PriceField] = {
     "order": "sellPrice",
 }
 BUY_MODE_LABELS: dict[BuyMode, str] = {
-    "instant": "Instant Sell", 
+    "instant": "Instant Buy", 
     "order": "Buy Order"
 }
 

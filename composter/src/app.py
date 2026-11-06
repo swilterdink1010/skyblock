@@ -34,13 +34,13 @@ def init_session_state():
         
 
 def init_composter_data():
-    if (st_get("last_profile") != st.session_state.profile_id) or st_get("reset_composter", False):
+    if (st_get("last_profile") != st.session_state["profile_id"]) or st_get("reset_composter", False):
         for upgrade in cc.UPGRADE_TYPES:
             if cc.UPGRADE_USES_GENERAL[upgrade]:
-                st.session_state[upgrade] = st.session_state.garden["composter_data"]["upgrades"].get(upgrade, 0)
-        st.session_state["speed_attribute"] = st.session_state.attr.get("stacks", {}).get("compost_speed", 0)
+                st.session_state[upgrade] = st.session_state["garden"]["composter_data"]["upgrades"].get(upgrade, 0)
+        st.session_state["speed_attribute"] = st.session_state["attr"].get("stacks", {}).get("compost_speed", 0)
         
-        st.session_state.last_profile = st.session_state.profile_id
+        st.session_state["last_profile"] = st.session_state["profile_id"]
         
         
 def composter_state_from_session() -> ComposterState:
@@ -137,7 +137,7 @@ def _set_sell_mode(widget: str) -> None:
     
 
 def sell_mode_pills(key: str) -> hyapi.SellMode:
-    st.session_state[key] = st_get("sell_mode")
+    st.session_state[key] = st.session_state["sell_mode"]
     st.pills(
         "sell_mode", 
         hyapi.SELL_PRICE_FIELD.keys(), 
@@ -158,7 +158,7 @@ def _set_buy_mode(widget: str) -> None:
     
 
 def buy_mode_pills(key: str) -> hyapi.BuyMode:
-    st.session_state[key] = st_get("buy_mode")
+    st.session_state[key] = st.session_state["buy_mode"]
     st.pills(
         "sell_mode", 
         hyapi.BUY_PRICE_FIELD.keys(), 
@@ -185,16 +185,16 @@ def main():
     with profile_col1:
         st.text_input("IGN:", max_chars=16, value="bigman7305", key="ign")
     with profile_col2:
-        uuid, profiles = get_profiles_cached(st.session_state.ign)
+        uuid, profiles = get_profiles_cached(st.session_state["ign"])
         st.selectbox("Profile:", [profile["cute_name"] for profile in profiles], key="selected_profile")
         st.session_state.profile_id = hyapi.get_profile_id(st.session_state.selected_profile, uuid, profiles=profiles)
         profile_data = {}
         for profile in range(0, len(profiles)):
-            if profiles[profile]["profile_id"] == st.session_state.profile_id:
+            if profiles[profile]["profile_id"] == st.session_state["profile_id"]:
                 profile_data = profiles[profile]
     
-    st.session_state.attr = profile_data["members"][uuid].get("attributes", {})
-    st.session_state.garden = get_garden_cached(st.session_state.profile_id)
+    st.session_state["attr"] = profile_data["members"][uuid].get("attributes", {})
+    st.session_state["garden"] = get_garden_cached(st_get("profile_id"))
     init_composter_data()
     
     # WEBSITE CONTENT
@@ -252,25 +252,33 @@ def main():
                 sim_tab_profit_per_hour, sim_tab_compost_cost = st.columns([1, 1], vertical_alignment="center")
                 
                 with sim_tab_profit_per_hour:
-                    profit_hr = state.get_profit_hr(fuel, matter, buy_mode=st_get("buy_mode"), sell_mode=st_get("sell_mode"))
-                    profit_refill = state.get_profit_refill(fuel, matter, buy_mode=st_get("buy_mode"), sell_mode=st_get("sell_mode"))
-                    st.markdown(f"### :rainbow[Profit Per Hour]<br>:orange[{round(profit_hr, 1):,}]<br>:blue[Profit Per Refill]<br>:orange[{round(profit_refill, 1):,}]", text_alignment="center", unsafe_allow_html=True)
+                    profit_hr = state.get_profit_hr(fuel, matter, buy_mode=st.session_state["buy_mode"], sell_mode=st.session_state["sell_mode"])
+                    profit_refill = state.get_profit_refill(fuel, matter, buy_mode=st.session_state["buy_mode"], sell_mode=st.session_state["sell_mode"])
+                    st.markdown(f"""
+                        ### :rainbow[Profit Per Hour]<br>:orange[{round(profit_hr, 1):,}]<br>
+                        :blue[Profit Per Refill]<br>:orange[{round(profit_refill, 1):,}]
+                        """, text_alignment="center", unsafe_allow_html=True
+                    )
                 
                 with sim_tab_compost_cost:
                     with st.columns(1, vertical_alignment="center", border=True)[0]:
-                        sell_mode_pills("sim_tab_compost_cost")
+                        sell_mode_pills("sim_tab_sell_mode")
                         
                         sim_tab_compost_cost_price, sim_tab_compost_cost_img = st.columns([1,1], vertical_alignment="center")
                         
                         with sim_tab_compost_cost_price:
-                            st.markdown(f"##### Compost Sell Price<br>:orange[{round(hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[st_get("sell_mode")]), 1):,}]", text_alignment="center", unsafe_allow_html=True)
+                            st.markdown(f"""
+                                ##### Compost Sell Price<br>
+                                :orange[{round(hyapi.get_bz_price("COMPOST", field=hyapi.SELL_PRICE_FIELD[st.session_state["sell_mode"]]), 1):,}]
+                                """, text_alignment="center", unsafe_allow_html=True
+                            )
                         with sim_tab_compost_cost_img:
                             with st.columns(1, border=True)[0]:
                                 st.image(MEDIA_LINKS.compost_img)
                 
                 with st.columns(1, border=True)[0]:
                     with st.columns([1,2,1])[1]:
-                        buy_mode_pills("sim_tab_materials")
+                        buy_mode_pills("sim_tab_buy_mode")
                         
                     matter_col, fuel_col = st.columns(2)
                     
@@ -279,7 +287,7 @@ def main():
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
-                            f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter, buy_mode=st_get("buy_mode")), 1):,}]"
+                            f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter, buy_mode=st.session_state["buy_mode"]), 1):,}]"
                         with txt_col[1]:
                             f":gray[x{state.get_matter_items_refill(matter)}]"
                     
@@ -288,7 +296,7 @@ def main():
                         
                         txt_col = st.columns([5, 1])
                         with txt_col[0]:
-                            f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel, buy_mode=st_get("buy_mode")), 1):,}]"
+                            f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel, buy_mode=st.session_state["buy_mode"]), 1):,}]"
                         with txt_col[1]:
                             f":gray[x{state.get_fuel_items_refill(fuel)}]"
                 
@@ -304,13 +312,25 @@ def main():
                     cols2 = st.columns(3, border=True, vertical_alignment="center")
                     
                     with cols2[0]:
-                        st.markdown(f"###### :green[Fuel Cap]<br>{upg_state.fuel_cap}", text_alignment="center", unsafe_allow_html=True)
+                        st.markdown(f"""
+                            ###### :green[Fuel Cap]<br> 
+                            {upg_state.fuel_cap}
+                            """, text_alignment="center", unsafe_allow_html=True
+                        )
                     
                     with cols2[1]:
-                        st.markdown(f"###### :yellow[Organic Matter Cap]<br>{upg_state.organic_matter_cap}", text_alignment="center", unsafe_allow_html=True)
+                        st.markdown(f"""
+                            ###### :yellow[Organic Matter Cap]<br>
+                            {upg_state.organic_matter_cap}
+                            """, text_alignment="center", unsafe_allow_html=True
+                        )
                     
                     with cols2[2]:
-                        st.markdown(f"###### :orange[Cost Reduction]<br>{upg_state.cost_reduction}", text_alignment="center", unsafe_allow_html=True)
+                        st.markdown(f"""
+                            ###### :orange[Cost Reduction]<br>
+                            {upg_state.cost_reduction}
+                            """, text_alignment="center", unsafe_allow_html=True
+                        )
                     
                 with cols[1]:
                     with st.columns(1, border=True)[0]:
@@ -322,7 +342,11 @@ def main():
                     for item in items.keys():
                         total_cost += hyapi.get_bz_price(item) * items[item]
                         
-                    st.markdown(f"## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>Copper Cost: :red[{copper:,}]", text_alignment="center", unsafe_allow_html=True)
+                    st.markdown(f"""
+                        ## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>
+                        Copper Cost: :red[{copper:,}]
+                        """, text_alignment="center", unsafe_allow_html=True
+                    )
                     
                     with st.expander("Items"):
                         for id in items.keys():
