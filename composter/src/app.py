@@ -285,20 +285,20 @@ def main():
                     with matter_col:
                         st.selectbox("Organic Matter Source:", cc.ORGANIC_MATTER_SOURCES.keys(), format_func=lambda x: cc.ORGANIC_MATTER_SOURCES[x]["pretty_print"], key="matter")
                         
-                        txt_col = st.columns([5, 1])
+                        txt_col = st.columns([3, 1])
                         with txt_col[0]:
                             f"Refill Cost: :orange[{round(state.get_matter_cost_refill(matter, buy_mode=st.session_state["buy_mode"]), 1):,}]"
                         with txt_col[1]:
-                            f":gray[x{state.get_matter_items_refill(matter)}]"
+                            st.markdown(f":gray[x{state.get_matter_items_refill(matter):>10,}]", text_alignment="right")
                     
                     with fuel_col:
                         st.selectbox("Fuel Source:", cc.FUEL_SOURCES.keys(), format_func=lambda x: cc.FUEL_SOURCES[x]["pretty_print"], key="fuel")
                         
-                        txt_col = st.columns([5, 1])
+                        txt_col = st.columns([3, 1])
                         with txt_col[0]:
                             f"Refill Cost: :orange[{round(state.get_fuel_cost_refill(fuel, buy_mode=st.session_state["buy_mode"]), 1):,}]"
                         with txt_col[1]:
-                            f":gray[x{state.get_fuel_items_refill(fuel)}]"
+                            st.markdown(f":gray[x{state.get_fuel_items_refill(fuel):>10,}]", text_alignment="right")
                 
         
         with uptime_tab:
