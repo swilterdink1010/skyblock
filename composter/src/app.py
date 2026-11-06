@@ -340,7 +340,16 @@ def main():
                                     
         with bottomline_tab:
             with st.columns(1, vertical_alignment="center", border=True)[0]:
-                with st.columns([1,2,1], vertical_alignment="center")[1]:
+                bottomline_tab_buy_sell_selector, bottomline_tab_hr_refill_selector = st.columns([1,1], vertical_alignment="top")
+                
+                with bottomline_tab_buy_sell_selector:
+                    with st.expander("Buy/Sell Modes"):
+                        st.markdown("Buy Mode", text_alignment="center")
+                        buy_mode_pills("bottomline_tab_buy_mode")
+                        st.markdown("Sell Mode", text_alignment="center")
+                        sell_mode_pills("bottomline_tab_sell_mode")
+                    
+                with bottomline_tab_hr_refill_selector:
                     mode = st.pills("mode", ["Profit/hr", "Refill"], default="Profit/hr", selection_mode="single", required=True, width="stretch", label_visibility="collapsed")
                     
                 if mode == "Profit/hr":
