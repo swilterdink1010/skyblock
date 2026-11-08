@@ -1,4 +1,4 @@
-import requests, os, time
+import requests, os, time, threading
 from typing import Literal
 from dotenv import load_dotenv
 
@@ -24,7 +24,7 @@ def get_uuid(username: str, data_lifetime: int = 86400) -> str:
             "uuid": "",
         }
     if time.monotonic()-_uuid_cache[username]["timestamp"] >= data_lifetime:
-        response = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{username}")
+        response = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{username}", timeout=10)
         if response.status_code == 200:
             _uuid_cache[username]["uuid"] = response.json()["id"]
             _uuid_cache[username]["timestamp"] = time.monotonic()
@@ -49,7 +49,7 @@ def get_profiles(uuid: str, data_lifetime: int = 600) -> dict:
             "data": {},
         }
     if time.monotonic()-_profiles_cache[uuid]["timestamp"] >= data_lifetime:
-        response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid})
+        response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid}, timeout=10)
         if response.status_code == 200:
             _profiles_cache[uuid]["data"] = response.json()["profiles"]
             _profiles_cache[uuid]["timestamp"] = time.monotonic()
@@ -83,7 +83,7 @@ def get_garden_data(profile_id: str, data_lifetime: int = 600) -> dict:
             "data": {},
         }
     if time.monotonic() - _garden_cache[profile_id]["timestamp"] >= data_lifetime:
-        response = requests.get("https://api.hypixel.net/v2/skyblock/garden", headers=HEADERS, params={"profile": profile_id})
+        response = requests.get("https://api.hypixel.net/v2/skyblock/garden", headers=HEADERS, params={"profile": profile_id}, timeout=10)
         if response.status_code == 200:
             _garden_cache[profile_id]["timestamp"] = time.monotonic()
             _garden_cache[profile_id]["data"] = response.json()["garden"]
@@ -121,13 +121,15 @@ _bz_cache = {
     "timestamp": float("-inf"),
     "data": {},
 }
+_bz_lock = threading.Lock()
 def get_bz_data(data_lifetime: int = 300) -> dict:
-    if time.monotonic() - _bz_cache["timestamp"] >= data_lifetime:
-        response = requests.get("https://api.hypixel.net/v2/skyblock/bazaar", headers=HEADERS)
-        if response.status_code == 200:
-            _bz_cache["timestamp"] = time.monotonic()
-            _bz_cache["data"] = response.json()["products"]
-        else: raise RuntimeError(f"Could not get bazaar data <{response.status_code}> [{response.content}]")
+    with _bz_lock:
+        if time.monotonic() - _bz_cache["timestamp"] >= data_lifetime:
+            response = requests.get("https://api.hypixel.net/v2/skyblock/bazaar", headers=HEADERS, timeout=10)
+            if response.status_code == 200:
+                _bz_cache["timestamp"] = time.monotonic()
+                _bz_cache["data"] = response.json()["products"]
+            else: raise RuntimeError(f"Could not get bazaar data <{response.status_code}> [{response.content}]")
     return _bz_cache["data"]
 
 
