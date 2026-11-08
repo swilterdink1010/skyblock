@@ -116,22 +116,6 @@ def time_to_str(time: float):
     return f"{int(hrs)}:{int(mins):02d}:{int(secs):02d}"
 
 
-@st.cache_data
-def get_profiles_cached(ign: str):
-    if not ign:
-        raise KeyError(f"Invalid input: empty")
-    uuid = hyapi.get_uuid(ign)
-    profiles = hyapi.get_profiles(uuid)
-    return uuid, profiles    
-
-
-@st.cache_data(ttl=300)
-def get_garden_cached(profile_id: str):
-    if not profile_id:
-        raise KeyError(f"Invalid input: empty")
-    return hyapi.get_garden_data(profile_id)
-
-
 def _set_sell_mode(widget: str) -> None:
     st.session_state["sell_mode"] = st.session_state[widget]
     
@@ -185,7 +169,16 @@ def main():
     with profile_col1:
         st.text_input("IGN:", max_chars=16, value="bigman7305", key="ign")
     with profile_col2:
-        uuid, profiles = get_profiles_cached(st.session_state["ign"])
+        try:
+            uuid = hyapi.get_uuid(st.session_state["ign"])
+            profiles = hyapi.get_profiles(uuid)
+        except (RuntimeError, KeyError) as e:
+            st.error(f"Could not find this player.")
+            print(e)
+            st.stop()
+        if not profiles:
+            st.error(f"No Skyblock profiles found for this player.")
+            st.stop()
         st.selectbox("Profile:", [profile["cute_name"] for profile in profiles], key="selected_profile")
         st.session_state.profile_id = hyapi.get_profile_id(st.session_state.selected_profile, uuid, profiles=profiles)
         profile_data = {}
@@ -194,7 +187,7 @@ def main():
                 profile_data = profiles[profile]
     
     st.session_state["attr"] = profile_data["members"][uuid].get("attributes", {})
-    st.session_state["garden"] = get_garden_cached(st_get("profile_id"))
+    st.session_state["garden"] = hyapi.get_garden_data(st_get("profile_id"))
     init_composter_data()
     
     # WEBSITE CONTENT

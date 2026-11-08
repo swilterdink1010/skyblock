@@ -18,6 +18,7 @@ def _drop_uuid_cache() -> None:
     
 def get_uuid(username: str, data_lifetime: int = 86400) -> str:
     username = username.lower()
+    print(username)
     if username not in _uuid_cache:
         _uuid_cache[username] = {
             "timestamp": float("-inf"),
@@ -33,6 +34,7 @@ def get_uuid(username: str, data_lifetime: int = 86400) -> str:
             raise RuntimeError(f"Could not get UUID <{response.status_code}> [{response.content}]")
         if len(_uuid_cache) > UUID_CACHE_LIMIT:
             _drop_uuid_cache()
+    print(_uuid_cache[username]["uuid"])
     return _uuid_cache[username]["uuid"]
 
 
@@ -51,7 +53,7 @@ def get_profiles(uuid: str, data_lifetime: int = 600) -> dict:
     if time.monotonic()-_profiles_cache[uuid]["timestamp"] >= data_lifetime:
         response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid}, timeout=10)
         if response.status_code == 200:
-            _profiles_cache[uuid]["data"] = response.json()["profiles"]
+            _profiles_cache[uuid]["data"] = response.json()["profiles"] or []
             _profiles_cache[uuid]["timestamp"] = time.monotonic()
         else: 
             del _profiles_cache[uuid]
