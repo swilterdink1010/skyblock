@@ -420,16 +420,67 @@ def main():
                         sell_mode_pills("bottomline_tab_sell_mode")
                     
                 with bottomline_tab_hr_refill_selector:
-                    mode: BottomlineMode = cast(BottomlineMode, st.pills("mode", ["per_hour", "refill"], format_func=lambda x: BottomlineModeLabel[x], default="per_hour", selection_mode="single", required=True, width="stretch", label_visibility="collapsed"))
-                    
-                if mode == "per_hour":
-                    st.markdown(f"### Current Profit Per Hour: :{"green" if profit_hr > 0 else "red"}[{round(profit_hr, 1):,}]", text_alignment="center")
-                    
-                if mode == "refill":
-                    st.markdown(f"### Current Profit Per Refill: :{"green" if profit_refill > 0 else "red"}[{round(profit_refill, 1):,}]", text_alignment="center")
-                    
-            
+                    st.session_state["bottomline_mode"] = cast(BottomlineMode, st.pills("mode", ["per_hour", "refill"], format_func=lambda x: BottomlineModeLabel[x], default="per_hour", selection_mode="single", required=True, width="stretch", label_visibility="collapsed"))
                 
+                with st.columns(1, vertical_alignment="center", border=True)[0]:  
+                    if st_get("bottomline_mode", "per_hour") == "per_hour":
+                        st.markdown(f"### Current Profit Per Hour: :{"green" if profit_hr > 0 else "red"}[{round(profit_hr, 1):,}]", text_alignment="center")
+                    if st_get("bottomline_mode", "per_hour") == "refill":
+                        st.markdown(f"### Current Profit Per Refill: :{"green" if profit_refill > 0 else "red"}[{round(profit_refill, 1):,}]", text_alignment="center")
+                    ""
+                    
+                bottomline_state = upg_to_bottomline(state, fuel, matter, st.session_state["buy_mode"], st.session_state["sell_mode"], bottomline_mode=st_get("bottomline_mode", "per_hour"), bottomline_goal=st_get("target_bottomline", 0))
+                    
+                bottomline_tab_upgrades, bottomline_tab_anvil_img = st.columns([2,1])
+                with bottomline_tab_upgrades:
+                    st.number_input("Bottom Line:", value=0.0, format="%0.1f", key="target_bottomline")
+                    bottomline_tab_upgrades_multi_drop, bottomline_tab_upgrades_cost_reduction = st.columns([1,1], border=True)
+                    with bottomline_tab_upgrades_multi_drop:
+                        st.markdown(f"""
+                            ###### :blue[Multi Drop]<br>{bottomline_state.multi_drop}
+                            """, text_alignment="center", unsafe_allow_html=True
+                        )
+                    with bottomline_tab_upgrades_cost_reduction:
+                        st.markdown(f"""
+                            ###### :orange[Cost Reduction]<br>{bottomline_state.cost_reduction}
+                            """, text_alignment="center", unsafe_allow_html=True
+                        )
+                with bottomline_tab_anvil_img:
+                    with st.columns(1, border=True)[0]:
+                        st.image(MEDIA_LINKS.anvil_img)
+                        
+                with st.columns(1, vertical_alignment="center", border=True)[0]:  
+                    if st_get("bottomline_mode", "per_hour") == "per_hour":
+                        st.markdown(f"### Profit Per Hour After Upgrades: :green[{round(bottomline_state.get_profit_hr(fuel, matter, st.session_state["buy_mode"], st.session_state["sell_mode"]), 1):,}]", text_alignment="center")
+                    if st_get("bottomline_mode", "per_hour") == "refill":
+                        st.markdown(f"### Profit Per Refill After Upgrades: :green[{round(bottomline_state.get_profit_refill(fuel, matter, st.session_state["buy_mode"], st.session_state["sell_mode"]), 1):,}]", text_alignment="center")
+                    ""
+                    
+                with st.columns(1, border=True, vertical_alignment="center")[0]:
+                    items, copper = mats_to_upgrade(state, bottomline_state)
+                    total_cost = 0
+                    for item in items.keys():
+                        total_cost += hyapi.get_bz_price(item) * items[item]
+                    
+                    st.markdown(f"""
+                        ## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>Copper Cost: :red[{copper:,}]
+                        """, text_alignment="center", unsafe_allow_html=True
+                    )
+                    
+                    with st.expander("Items"):
+                        for id in items.keys():
+                            with st.columns(1, border=True, vertical_alignment="center")[0]:
+                                price = hyapi.get_bz_price(id)
+                                cols3 = st.columns([7, 2, 2, 3])
+                                with cols3[0]:
+                                    st.markdown(f"{cc.UPGRADE_SOURCES[id]["pretty_print"]}", text_alignment="left")
+                                with cols3[1]:
+                                    st.markdown(f":gray[x]{items[id]}", text_alignment="right")
+                                with cols3[2]:
+                                    st.markdown(f":orange[{numerize(items[id]*price)}]", text_alignment="right")
+                                with cols3[3]:
+                                    st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
+                                    
 
 if __name__ == "__main__":
     main()
