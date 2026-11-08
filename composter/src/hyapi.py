@@ -18,7 +18,6 @@ def _drop_uuid_cache() -> None:
     
 def get_uuid(username: str, data_lifetime: int = 86400) -> str:
     username = username.lower()
-    print(username)
     if username not in _uuid_cache:
         _uuid_cache[username] = {
             "timestamp": float("-inf"),
@@ -34,7 +33,6 @@ def get_uuid(username: str, data_lifetime: int = 86400) -> str:
             raise RuntimeError(f"Could not get UUID <{response.status_code}> [{response.content}]")
         if len(_uuid_cache) > UUID_CACHE_LIMIT:
             _drop_uuid_cache()
-    print(_uuid_cache[username]["uuid"])
     return _uuid_cache[username]["uuid"]
 
 
@@ -44,7 +42,7 @@ def _drop_profiles_cache() -> None:
     oldest = min(_profiles_cache, key=lambda x: _profiles_cache[x]["timestamp"])
     del _profiles_cache[oldest]
 
-def get_profiles(uuid: str, data_lifetime: int = 600) -> dict:
+def get_profiles(uuid: str, data_lifetime: int = 600) -> list:
     if uuid not in _profiles_cache:
         _profiles_cache[uuid] = {
             "timestamp": float("-inf"),
@@ -63,7 +61,7 @@ def get_profiles(uuid: str, data_lifetime: int = 600) -> dict:
     return _profiles_cache[uuid]["data"]
 
 
-def get_profile_id(profile_name: str, uuid: str, profiles: dict | None = None) -> str:
+def get_profile_id(profile_name: str, uuid: str, profiles: list | None = None) -> str:
     if profiles is None:
         profiles = get_profiles(uuid)
     for profile in profiles:

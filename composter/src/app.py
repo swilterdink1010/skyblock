@@ -34,10 +34,12 @@ def init_session_state():
         
 
 def init_composter_data():
+    print(st_get("last_profile"))
+    print(st.session_state["profile_id"])
     if (st_get("last_profile") != st.session_state["profile_id"]) or st_get("reset_composter", False):
         for upgrade in cc.UPGRADE_TYPES:
             if cc.UPGRADE_USES_GENERAL[upgrade]:
-                st.session_state[upgrade] = st.session_state["garden"]["composter_data"]["upgrades"].get(upgrade, 0)
+                st.session_state[upgrade] = st.session_state["garden"].get("composter_data", {}).get("upgrades", {}).get(upgrade, 0)
         st.session_state["speed_attribute"] = st.session_state["attr"].get("stacks", {}).get("compost_speed", 0)
         
         st.session_state["last_profile"] = st.session_state["profile_id"]
@@ -168,26 +170,42 @@ def main():
     
     with profile_col1:
         st.text_input("IGN:", max_chars=16, value="bigman7305", key="ign")
+    
+    uuid: str = ""
+    profiles: list = []
+    profile_id: str = ""
+    profile_data: dict = {}
+    garden: dict = {}
+    player_dne_warning: bool = False
+    
     with profile_col2:
         try:
             uuid = hyapi.get_uuid(st.session_state["ign"])
             profiles = hyapi.get_profiles(uuid)
-        except (RuntimeError, KeyError) as e:
-            st.error(f"Could not find this player.")
-            print(e)
-            st.stop()
-        if not profiles:
-            st.error(f"No Skyblock profiles found for this player.")
-            st.stop()
-        st.selectbox("Profile:", [profile["cute_name"] for profile in profiles], key="selected_profile")
-        st.session_state.profile_id = hyapi.get_profile_id(st.session_state.selected_profile, uuid, profiles=profiles)
-        profile_data = {}
+        except RuntimeError, KeyError:
+            player_dne_warning = True
+        if profiles:
+            st.selectbox("Profile:", [profile["cute_name"] for profile in profiles], key="selected_profile")
+        elif player_dne_warning:
+            st.warning(f"Could not find player {st.session_state["ign"]!r}.", icon=":material/warning:")
+        else:
+            st.selectbox("Profile:", [])
+            
+        
+    if profiles:
+        profile_id = hyapi.get_profile_id(st.session_state["selected_profile"], uuid, profiles=profiles)
         for profile in range(0, len(profiles)):
             if profiles[profile]["profile_id"] == st.session_state["profile_id"]:
                 profile_data = profiles[profile]
+    st.session_state["profile_id"] = profile_id
+    try:
+        garden = hyapi.get_garden_data(st_get("profile_id"))
+    except RuntimeError:
+        st.info("No garden data found for profile, assuming no upgrades", icon=":material/feedback:")
     
-    st.session_state["attr"] = profile_data["members"][uuid].get("attributes", {})
-    st.session_state["garden"] = hyapi.get_garden_data(st_get("profile_id"))
+    st.session_state["attr"] = profile_data.get("members", {}).get(uuid, {}).get("attributes", {})
+    st.session_state["garden"] = garden
+    
     init_composter_data()
     
     # WEBSITE CONTENT
