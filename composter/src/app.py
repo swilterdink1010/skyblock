@@ -510,7 +510,18 @@ def main():
                                         st.markdown(f":orange[{numerize(items[id]*price)}]", text_alignment="right")
                                     with cols3[3]:
                                         st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
-                                    
+
+    footer = st.container()
+    with footer:
+        st.divider()
+        st.space("xxlarge")
+        
+        footer_left, footer_right = st.columns([1, 3], vertical_alignment="center")
+        with footer_left:
+            st.link_button("Support this project", "https://ko-fi.com/bigman7305", icon=":material/favorite:")
+        with footer_right:    
+            st.markdown(":gray[Source code can be found [here](https://github.com/swilterdink1010/skyblock).]<br>:gray[*This project is not affiliated with or endorsed by Hypixel Inc. or Mojang Studios.*]", text_alignment="right", unsafe_allow_html=True)
+                                            
 
 if __name__ == "__main__":
     main()
