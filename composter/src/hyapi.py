@@ -10,20 +10,57 @@ HEADERS = {
     "API-Key": HYPIXEL_API_KEY,
 }
 
-def get_uuid(username: str) -> str:
-    response = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{username}")
-    if response.status_code == 200:
-        return response.json()["id"]
-    else: raise RuntimeError(f"Could not get UUID <{response.status_code}> [{response.content}]")
+_uuid_cache = {}
+UUID_CACHE_LIMIT = 4096
+def _drop_uuid_cache() -> None:
+    oldest = min(_uuid_cache, key=lambda x: _uuid_cache[x]["timestamp"])
+    del _uuid_cache[oldest]
     
-    
-def get_profiles(uuid: str) -> dict:
-    response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid})
-    if response.status_code == 200:
-        return response.json()["profiles"]
-    else: raise RuntimeError(f"Could not get profile data <{response.status_code}> [{response.content}]")
-    
-    
+def get_uuid(username: str, data_lifetime: int = 86400) -> str:
+    username = username.lower()
+    if username not in _uuid_cache:
+        _uuid_cache[username] = {
+            "timestamp": float("-inf"),
+            "uuid": "",
+        }
+    if time.monotonic()-_uuid_cache[username]["timestamp"] >= data_lifetime:
+        response = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{username}")
+        if response.status_code == 200:
+            _uuid_cache[username]["uuid"] = response.json()["id"]
+            _uuid_cache[username]["timestamp"] = time.monotonic()
+        else: 
+            del _uuid_cache[username]
+            raise RuntimeError(f"Could not get UUID <{response.status_code}> [{response.content}]")
+        if len(_uuid_cache) > UUID_CACHE_LIMIT:
+            _drop_uuid_cache()
+    return _uuid_cache[username]["uuid"]
+
+
+_profiles_cache = {}
+PROFILES_CACHE_LIMIT = 32
+def _drop_profiles_cache() -> None:
+    oldest = min(_profiles_cache, key=lambda x: _profiles_cache[x]["timestamp"])
+    del _profiles_cache[oldest]
+
+def get_profiles(uuid: str, data_lifetime: int = 600) -> dict:
+    if uuid not in _profiles_cache:
+        _profiles_cache[uuid] = {
+            "timestamp": float("-inf"),
+            "data": {},
+        }
+    if time.monotonic()-_profiles_cache[uuid]["timestamp"] >= data_lifetime:
+        response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid})
+        if response.status_code == 200:
+            _profiles_cache[uuid]["data"] = response.json()["profiles"]
+            _profiles_cache[uuid]["timestamp"] = time.monotonic()
+        else: 
+            del _profiles_cache[uuid]
+            raise RuntimeError(f"Could not get profile data <{response.status_code}> [{response.content}]")
+        if len(_profiles_cache) > PROFILES_CACHE_LIMIT:
+            _drop_profiles_cache()
+    return _profiles_cache[uuid]["data"]
+
+
 def get_profile_id(profile_name: str, uuid: str, profiles: dict | None = None) -> str:
     if profiles is None:
         profiles = get_profiles(uuid)
@@ -34,17 +71,12 @@ def get_profile_id(profile_name: str, uuid: str, profiles: dict | None = None) -
 
 
 _garden_cache = {}
-GARDEN_CACHE_LIMIT = 4
+GARDEN_CACHE_LIMIT = 256
 def _garden_cache_drop() -> None:
-    min_timestamp = float("-inf")
-    to_remove = ""
-    for cached_profile_id in _garden_cache.keys():
-        if _garden_cache[cached_profile_id]["timestamp"] < min_timestamp:
-            min_timestamp = _garden_cache[cached_profile_id]["timestamp"]
-            to_remove = cached_profile_id
-    del _garden_cache[to_remove]
+    oldest = min(_garden_cache, key=lambda x: _garden_cache[x]["timestamp"])
+    del _garden_cache[oldest]
     
-def get_garden_data(profile_id: str, data_lifetime: int = 300) -> dict:
+def get_garden_data(profile_id: str, data_lifetime: int = 600) -> dict:
     if profile_id not in _garden_cache:
         _garden_cache[profile_id] = {
             "timestamp": float("-inf"),
@@ -58,7 +90,7 @@ def get_garden_data(profile_id: str, data_lifetime: int = 300) -> dict:
         else:
             del _garden_cache[profile_id]
             raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
-        if len(_garden_cache) == GARDEN_CACHE_LIMIT:
+        if len(_garden_cache) > GARDEN_CACHE_LIMIT:
             _garden_cache_drop()
     return _garden_cache[profile_id]["data"]
 
