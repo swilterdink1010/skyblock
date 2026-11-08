@@ -236,10 +236,11 @@ def main():
         
     if profiles:
         profile_id = hyapi.get_profile_id(st.session_state["selected_profile"], uuid, profiles=profiles)
+    st.session_state["profile_id"] = profile_id
+    if profiles:
         for profile in range(0, len(profiles)):
             if profiles[profile]["profile_id"] == st.session_state["profile_id"]:
                 profile_data = profiles[profile]
-    st.session_state["profile_id"] = profile_id
     try:
         garden = hyapi.get_garden_data(st_get("profile_id"))
     except hyapi.BadAPICallError as e:
