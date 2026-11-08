@@ -2,7 +2,7 @@ import hyapi, copy
 import composter_constants as cc
 from composter_state import ComposterState
 from media import MEDIA_LINKS
-from typing import Any, Tuple, cast
+from typing import Any, Tuple, cast, Literal
 import streamlit as st
 
 
@@ -47,7 +47,7 @@ def composter_state_from_session() -> ComposterState:
     return ComposterState(*[st_get(upg, 0) for upg in cc.UPGRADE_TYPES])
 
 
-def upg_to_target_uptime(uptime: int, state: ComposterState = composter_state_from_session()) -> ComposterState:
+def upg_to_target_uptime(state: ComposterState, uptime: int) -> ComposterState:
     relevant_upg = ["fuel_cap", "organic_matter_cap", "cost_reduction"]
     while (state.sim_composter()[0] < uptime and not state.is_maxed(*relevant_upg)):
         initial_time = state.sim_composter()[0]
@@ -68,6 +68,44 @@ def upg_to_target_uptime(uptime: int, state: ComposterState = composter_state_fr
             
             if cost/dur < best_value:
                 best_value = cost/dur
+                best_upg = temp
+        
+        if state != best_upg:
+            state = best_upg
+        else: return state
+    
+    return state
+                    
+BottomlineMode = Literal["per_hour", "refill"]
+BottomlineModeLabel: dict[BottomlineMode, str] = {
+    "per_hour": "Profit/hr",
+    "refill": "Refill",
+}
+def upg_to_bottomline(state: ComposterState, fuel_source: str, matter_source: str, buy_mode: hyapi.BuyMode = "instant", sell_mode: hyapi.SellMode = "instant", bottomline_mode: BottomlineMode = "per_hour", bottomline_goal: float = 0):
+    if bottomline_mode not in ["per_hour", "refill"]:
+        raise ValueError(f"Invalid {bottomline_mode = }")
+    def profit_function(_state: ComposterState) -> float:
+        return (_state.get_profit_hr if bottomline_mode == "per_hour" else _state.get_profit_refill)(fuel_source, matter_source, buy_mode, sell_mode)
+    relevant_upg = ["multi_drop", "cost_reduction"]
+    while (profit_function(state) < bottomline_goal and not state.is_maxed(*relevant_upg)):
+        initial_profit = profit_function(state)
+        best_value = float("inf")
+        best_upg = state
+        
+        for upg in relevant_upg:
+            if state.is_maxed(upg):
+                continue
+            
+            temp = copy.deepcopy(state)
+            setattr(temp, upg, getattr(temp, upg)+1)
+            cost = coins_to_upgrade(*mats_to_upgrade(state, temp))
+            profit_increase = profit_function(temp)-initial_profit
+            
+            if profit_increase == 0:
+                continue
+            
+            if cost/profit_increase < best_value:
+                best_value = cost/profit_increase
                 best_upg = temp
         
         if state != best_upg:
@@ -319,7 +357,7 @@ def main():
                 with cols[0]:
                     target_uptime = st.time_input("Target Uptime:", "04:00:00")
                     uptime_seconds = target_uptime.hour*3600 + target_uptime.minute*60 + target_uptime.second
-                    upg_state = upg_to_target_uptime(uptime_seconds, state)
+                    upg_state = upg_to_target_uptime(state, uptime_seconds)
                     
                     cols2 = st.columns(3, border=True, vertical_alignment="center")
                     
@@ -382,13 +420,16 @@ def main():
                         sell_mode_pills("bottomline_tab_sell_mode")
                     
                 with bottomline_tab_hr_refill_selector:
-                    mode = st.pills("mode", ["Profit/hr", "Refill"], default="Profit/hr", selection_mode="single", required=True, width="stretch", label_visibility="collapsed")
+                    mode: BottomlineMode = cast(BottomlineMode, st.pills("mode", ["per_hour", "refill"], format_func=lambda x: BottomlineModeLabel[x], default="per_hour", selection_mode="single", required=True, width="stretch", label_visibility="collapsed"))
                     
-                if mode == "Profit/hr":
+                if mode == "per_hour":
                     st.markdown(f"### Current Profit Per Hour: :{"green" if profit_hr > 0 else "red"}[{round(profit_hr, 1):,}]", text_alignment="center")
                     
-                if mode == "Refill":
+                if mode == "refill":
                     st.markdown(f"### Current Profit Per Refill: :{"green" if profit_refill > 0 else "red"}[{round(profit_refill, 1):,}]", text_alignment="center")
+                    
+            
+                
 
 if __name__ == "__main__":
     main()

@@ -65,7 +65,6 @@ def get_profiles(uuid: str, data_lifetime: int = 600) -> list:
         }
     if time.monotonic()-_profiles_cache[uuid]["timestamp"] >= data_lifetime:
         response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid}, timeout=10)
-        print(response.status_code, response.reason)
         match response.status_code:
             case 200:
                 _profiles_cache[uuid]["data"] = response.json()["profiles"] or []
