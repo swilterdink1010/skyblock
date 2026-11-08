@@ -7,7 +7,7 @@ from datetime import time
 import streamlit as st
 
 
-def st_get(key: str, default: Any = None):
+def st_get(key: str, default: Any = None) -> Any:
     return st.session_state.get(key, default)
 
 
@@ -23,7 +23,7 @@ def attr_stacks_to_level(stacks: int, rarity: str) -> Tuple[int, int]:
     return level, stack_sum - stacks
 
 
-def init_session_state():
+def init_session_state() -> None:
     INIT_VALUES: dict[str, Any] = {
         "profile_id": "",
         "buy_mode": "instant",
@@ -34,13 +34,12 @@ def init_session_state():
             st.session_state[key] = INIT_VALUES[key]
         
 
-def init_composter_data():
+def init_composter_data() -> None:
     if (st_get("last_profile") != st.session_state["profile_id"]) or st_get("reset_composter", False):
         for upgrade in cc.UPGRADE_TYPES:
             if cc.UPGRADE_USES_GENERAL[upgrade]:
                 st.session_state[upgrade] = st.session_state["garden"].get("composter_data", {}).get("upgrades", {}).get(upgrade, 0)
         st.session_state["speed_attribute"] = st.session_state["attr"].get("stacks", {}).get("compost_speed", 0)
-        
         st.session_state["last_profile"] = st.session_state["profile_id"]
         
         
@@ -82,7 +81,7 @@ BottomlineModeLabel: dict[BottomlineMode, str] = {
     "per_hour": "Profit/hr",
     "refill": "Refill",
 }
-def upg_to_bottomline(state: ComposterState, fuel_source: str, matter_source: str, buy_mode: hyapi.BuyMode = "instant", sell_mode: hyapi.SellMode = "instant", bottomline_mode: BottomlineMode = "per_hour", bottomline_goal: float = 0):
+def upg_to_bottomline(state: ComposterState, fuel_source: str, matter_source: str, buy_mode: hyapi.BuyMode = "instant", sell_mode: hyapi.SellMode = "instant", bottomline_mode: BottomlineMode = "per_hour", bottomline_goal: float = 0) -> ComposterState:
     if bottomline_mode not in ["per_hour", "refill"]:
         raise ValueError(f"Invalid {bottomline_mode = }")
     def profit_function(_state: ComposterState) -> float:
@@ -116,7 +115,7 @@ def upg_to_bottomline(state: ComposterState, fuel_source: str, matter_source: st
     return state
 
 
-def mats_to_upgrade(state: ComposterState, upgraded_state: ComposterState):
+def mats_to_upgrade(state: ComposterState, upgraded_state: ComposterState) -> Tuple[dict, int]:
     items = {}
     copper = 0
     for upg in cc.UPGRADE_TYPES:
@@ -134,7 +133,7 @@ def mats_to_upgrade(state: ComposterState, upgraded_state: ComposterState):
     return items, copper
                 
                 
-def coins_to_upgrade(items: dict, copper: int, copper_value: int = 0):
+def coins_to_upgrade(items: dict, copper: int, copper_value: int = 0) -> float:
     total_cost = 0
     for item in items.keys():
         total_cost += hyapi.get_bz_price(item) * items[item]
@@ -149,7 +148,7 @@ def numerize(val: float) -> str:
     return str(round(val, 1))
 
 
-def time_to_str(time: float):
+def float_to_time_str(time: float) -> str:
     mins, secs = divmod(time, 60)
     hrs, mins = divmod(mins, 60)
     return f"{int(hrs)}:{int(mins):02d}:{int(secs):02d}"
@@ -299,7 +298,7 @@ def main():
                     st.markdown(f"### :yellow[Organic Matter Cap]<br>{state.get_value("organic_matter_cap"):,}", text_alignment="center", unsafe_allow_html=True)
                 
                 with right:
-                    st.markdown(f"### :blue[Runtime]<br>{time_to_str(state.sim_composter()[0])}", text_alignment="center", unsafe_allow_html=True)
+                    st.markdown(f"### :blue[Runtime]<br>{float_to_time_str(state.sim_composter()[0])}", text_alignment="center", unsafe_allow_html=True)
                     st.markdown(f"### :red[Avg. Compost Per Hour]<br>{round(state.get_compost_generated_hr(), 2):,}", text_alignment="center", unsafe_allow_html=True)
                 
                 matter = st_get("matter", next(iter(cc.ORGANIC_MATTER_SOURCES)))
@@ -362,7 +361,7 @@ def main():
                 target_uptime_met = state.sim_composter()[0] >= st_get("target_uptime", float("inf"))
                     
                 with st.columns(1, vertical_alignment="center", border=True)[0]:
-                    st.markdown(f"### Current Uptime: :{"green" if target_uptime_met else "red"}[{time_to_str(state.sim_composter()[0])}]", text_alignment="center")
+                    st.markdown(f"### Current Uptime: :{"green" if target_uptime_met else "red"}[{float_to_time_str(state.sim_composter()[0])}]", text_alignment="center")
                     ""
                 
                 cols = st.columns([11, 5], vertical_alignment="center")
@@ -400,7 +399,7 @@ def main():
                     ""
                 else:
                     with st.columns(1, vertical_alignment="center", border=True)[0]:
-                        st.markdown(f"### Uptime After Upgrades: :green[{time_to_str(upg_state.sim_composter()[0])}]", text_alignment="center")
+                        st.markdown(f"### Uptime After Upgrades: :green[{float_to_time_str(upg_state.sim_composter()[0])}]", text_alignment="center")
                         ""
                     with st.columns(1, border=True, vertical_alignment="center")[0]:
                         items, copper = mats_to_upgrade(state, upg_state)
