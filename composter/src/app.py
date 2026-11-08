@@ -3,6 +3,7 @@ import composter_constants as cc
 from composter_state import ComposterState
 from media import MEDIA_LINKS
 from typing import Any, Tuple, cast, Literal
+from datetime import time
 import streamlit as st
 
 
@@ -152,6 +153,10 @@ def time_to_str(time: float):
     mins, secs = divmod(time, 60)
     hrs, mins = divmod(mins, 60)
     return f"{int(hrs)}:{int(mins):02d}:{int(secs):02d}"
+
+
+def time_to_int(time: time) -> int:
+    return time.hour*3600 + time.minute*60 + time.second
 
 
 def _set_sell_mode(widget: str) -> None:
@@ -353,11 +358,19 @@ def main():
         
         with uptime_tab:
             with st.columns(1, vertical_alignment="center", border=True)[0]:
+                
+                st.session_state["target_uptime"] = time_to_int(st.session_state["target_uptime_datetime"])
+                target_uptime_met = state.sim_composter()[0] >= st_get("target_uptime", float("inf"))
+                    
+                with st.columns(1, vertical_alignment="center", border=True)[0]:
+                    st.markdown(f"### Current Uptime: :{"green" if target_uptime_met else "red"}[{time_to_str(state.sim_composter()[0])}]", text_alignment="center")
+                    ""
+                
                 cols = st.columns([11, 5], vertical_alignment="center")
                 with cols[0]:
-                    target_uptime = st.time_input("Target Uptime:", "04:00:00")
-                    uptime_seconds = target_uptime.hour*3600 + target_uptime.minute*60 + target_uptime.second
-                    upg_state = upg_to_target_uptime(state, uptime_seconds)
+                    st.time_input("Target Uptime:", "04:00:00", key="target_uptime_datetime")
+                    
+                    upg_state = upg_to_target_uptime(state, st.session_state["target_uptime"])
                     
                     cols2 = st.columns(3, border=True, vertical_alignment="center")
                     
@@ -384,29 +397,33 @@ def main():
                         st.image(MEDIA_LINKS.composter_img)
                 
                 with st.columns(1, border=True, vertical_alignment="center")[0]:
-                    items, copper = mats_to_upgrade(state, upg_state)
-                    total_cost = 0
-                    for item in items.keys():
-                        total_cost += hyapi.get_bz_price(item) * items[item]
+                    if target_uptime_met:
+                        st.markdown("## :gray[Target uptime met!]", text_alignment="center")
+                        ""
+                    else:
+                        items, copper = mats_to_upgrade(state, upg_state)
+                        total_cost = 0
+                        for item in items.keys():
+                            total_cost += hyapi.get_bz_price(item) * items[item]
+                            
+                        st.markdown(f"""
+                            ## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>Copper Cost: :red[{copper:,}]
+                            """, text_alignment="center", unsafe_allow_html=True
+                        )
                         
-                    st.markdown(f"""
-                        ## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>Copper Cost: :red[{copper:,}]
-                        """, text_alignment="center", unsafe_allow_html=True
-                    )
-                    
-                    with st.expander("Items"):
-                        for id in items.keys():
-                            with st.columns(1, border=True, vertical_alignment="center")[0]:
-                                price = hyapi.get_bz_price(id)
-                                cols3 = st.columns([7, 2, 2, 3])
-                                with cols3[0]:
-                                    st.markdown(f"{cc.UPGRADE_SOURCES[id]["pretty_print"]}", text_alignment="left")
-                                with cols3[1]:
-                                    st.markdown(f":gray[x]{items[id]}", text_alignment="right")
-                                with cols3[2]:
-                                    st.markdown(f":orange[{numerize(items[id]*price)}]", text_alignment="right")
-                                with cols3[3]:
-                                    st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
+                        with st.expander("Items"):
+                            for id in items.keys():
+                                with st.columns(1, border=True, vertical_alignment="center")[0]:
+                                    price = hyapi.get_bz_price(id)
+                                    cols3 = st.columns([7, 2, 2, 3])
+                                    with cols3[0]:
+                                        st.markdown(f"{cc.UPGRADE_SOURCES[id]["pretty_print"]}", text_alignment="left")
+                                    with cols3[1]:
+                                        st.markdown(f":gray[x]{items[id]}", text_alignment="right")
+                                    with cols3[2]:
+                                        st.markdown(f":orange[{numerize(items[id]*price)}]", text_alignment="right")
+                                    with cols3[3]:
+                                        st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
                                     
         with bottomline_tab:
             with st.columns(1, vertical_alignment="center", border=True)[0]:
