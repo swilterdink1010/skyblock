@@ -34,8 +34,6 @@ def init_session_state():
         
 
 def init_composter_data():
-    print(st_get("last_profile"))
-    print(st.session_state["profile_id"])
     if (st_get("last_profile") != st.session_state["profile_id"]) or st_get("reset_composter", False):
         for upgrade in cc.UPGRADE_TYPES:
             if cc.UPGRADE_USES_GENERAL[upgrade]:
@@ -182,8 +180,10 @@ def main():
         try:
             uuid = hyapi.get_uuid(st.session_state["ign"])
             profiles = hyapi.get_profiles(uuid)
-        except RuntimeError, KeyError:
-            player_dne_warning = True
+        except hyapi.BadAPICallError as e:
+            if e.code == hyapi.BadAPICallCode.NO_UUID:
+                player_dne_warning = True
+            else: st.error(e)
         if profiles:
             st.selectbox("Profile:", [profile["cute_name"] for profile in profiles], key="selected_profile")
         elif player_dne_warning:
@@ -200,8 +200,10 @@ def main():
     st.session_state["profile_id"] = profile_id
     try:
         garden = hyapi.get_garden_data(st_get("profile_id"))
-    except RuntimeError:
-        st.info("No garden data found for profile, assuming no upgrades", icon=":material/feedback:")
+    except hyapi.BadAPICallError as e:
+        if e.code == hyapi.BadAPICallCode.NO_GARDEN_DATA:
+            st.info("No garden data found for profile, assuming no upgrades", icon=":material/feedback:")
+        else: st.error(e)
     
     st.session_state["attr"] = profile_data.get("members", {}).get(uuid, {}).get("attributes", {})
     st.session_state["garden"] = garden

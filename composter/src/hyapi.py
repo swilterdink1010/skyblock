@@ -1,6 +1,21 @@
 import requests, os, time, threading
 from typing import Literal
 from dotenv import load_dotenv
+from enum import Enum
+
+
+class BadAPICallCode(Enum):
+    NO_UUID = 405
+    NO_PROFILE_DATA = 406
+    NO_GARDEN_DATA = 407
+    NO_BZ_DATA = 408
+    BAD_API_KEY = 409
+
+class BadAPICallError(Exception):
+    def __init__(self, message: str, code: BadAPICallCode | int = 400):
+        super().__init__(message)
+        self.code = code
+
 
 load_dotenv()
 HYPIXEL_API_KEY = os.getenv("HYPIXEL_API_KEY")
@@ -30,7 +45,7 @@ def get_uuid(username: str, data_lifetime: int = 86400) -> str:
             _uuid_cache[username]["timestamp"] = time.monotonic()
         else: 
             del _uuid_cache[username]
-            raise RuntimeError(f"Could not get UUID <{response.status_code}> [{response.content}]")
+            raise BadAPICallError(f"Could not get UUID for {username = }", BadAPICallCode.NO_UUID)
         if len(_uuid_cache) > UUID_CACHE_LIMIT:
             _drop_uuid_cache()
     return _uuid_cache[username]["uuid"]
@@ -50,12 +65,17 @@ def get_profiles(uuid: str, data_lifetime: int = 600) -> list:
         }
     if time.monotonic()-_profiles_cache[uuid]["timestamp"] >= data_lifetime:
         response = requests.get("https://api.hypixel.net/v2/skyblock/profiles", headers=HEADERS, params={"uuid": uuid}, timeout=10)
-        if response.status_code == 200:
-            _profiles_cache[uuid]["data"] = response.json()["profiles"] or []
-            _profiles_cache[uuid]["timestamp"] = time.monotonic()
-        else: 
-            del _profiles_cache[uuid]
-            raise RuntimeError(f"Could not get profile data <{response.status_code}> [{response.content}]")
+        print(response.status_code, response.reason)
+        match response.status_code:
+            case 200:
+                _profiles_cache[uuid]["data"] = response.json()["profiles"] or []
+                _profiles_cache[uuid]["timestamp"] = time.monotonic()
+            case 403:
+                del _profiles_cache[uuid]
+                raise BadAPICallError("Bad API key", BadAPICallCode.BAD_API_KEY)
+            case _:
+                del _profiles_cache[uuid]
+                raise BadAPICallError(f"Could not get profile data for {uuid = }", BadAPICallCode.NO_PROFILE_DATA)
         if len(_profiles_cache) > PROFILES_CACHE_LIMIT:
             _drop_profiles_cache()
     return _profiles_cache[uuid]["data"]
@@ -67,7 +87,7 @@ def get_profile_id(profile_name: str, uuid: str, profiles: list | None = None) -
     for profile in profiles:
         if profile["cute_name"].lower() == profile_name.lower():
             return profile["profile_id"]
-    raise KeyError(f"Could not find profile {profile_name} in user profiles")
+    raise KeyError(f"Could not find {profile_name = } in user profiles")
 
 
 _garden_cache = {}
@@ -89,7 +109,7 @@ def get_garden_data(profile_id: str, data_lifetime: int = 600) -> dict:
             _garden_cache[profile_id]["data"] = response.json()["garden"]
         else:
             del _garden_cache[profile_id]
-            raise RuntimeError(f"Could not get garden data <{response.status_code}> [{response.content}]")
+            raise BadAPICallError(f"Could not get garden data for {profile_id = }", BadAPICallCode.NO_GARDEN_DATA)
         if len(_garden_cache) > GARDEN_CACHE_LIMIT:
             _garden_cache_drop()
     return _garden_cache[profile_id]["data"]
@@ -129,18 +149,19 @@ def get_bz_data(data_lifetime: int = 300) -> dict:
             if response.status_code == 200:
                 _bz_cache["timestamp"] = time.monotonic()
                 _bz_cache["data"] = response.json()["products"]
-            else: raise RuntimeError(f"Could not get bazaar data <{response.status_code}> [{response.content}]")
+            else: raise BadAPICallError(f"Could not get bazaar data", BadAPICallCode.NO_BZ_DATA)
     return _bz_cache["data"]
 
 
 def get_bz_price(id: str, field: Literal["buyPrice", "sellPrice"] = "buyPrice") -> float:
     if not get_bz_data().get(id):
-        raise KeyError(f"Invalid input: {id}")
+        raise KeyError(f"Invalid item {id = }")
     return get_bz_data()[id]["quick_status"][field]
 
 
 def main() -> None:
     pass
+    
     
 if __name__ == "__main__":
     main()
