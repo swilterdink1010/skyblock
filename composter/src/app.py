@@ -314,10 +314,10 @@ def main():
                         with left:
                             cols = st.columns([5,2], vertical_alignment="center")
                             with cols[0]:
-                                st.markdown(f"##### #{ranking} {cc.UPGRADE_NAMES_MARKDOWN[upgrade]}")
+                                st.markdown(f"##### :small[#{ranking}] {cc.UPGRADE_NAMES_MARKDOWN[upgrade]}")
                             with cols[1]:
                                 with st.container(border=True, vertical_alignment="center"):
-                                    st.markdown(f"**Lv {getattr(state, upgrade)+1}**", text_alignment="center")
+                                    st.markdown(f"**:small[Lv] {getattr(state, upgrade)+1}**", text_alignment="center")
                         with right:
                             if upgrade_states[upgrade]["value"] in [float("inf"), float("-inf")]:
                                 data = pd.DataFrame(data={"Profit Change": 0, "Upgrade Cost": [upgrade_states[upgrade]["cost"]]})
