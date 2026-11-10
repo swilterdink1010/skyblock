@@ -7,6 +7,14 @@ UPGRADE_NAMES = {
     "cost_reduction": "Cost Reduction", 
     "speed_attribute": "Compost Speed Attribute Level",
 }
+UPGRADE_NAMES_MARKDOWN = {
+    "speed": ":red[Composter Speed]", 
+    "multi_drop": ":blue[Multi Drop]", 
+    "fuel_cap": ":green[Fuel Cap]", 
+    "organic_matter_cap": ":yellow[Organic Matter Cap]", 
+    "cost_reduction": ":orange[Cost Reduction]", 
+    "speed_attribute": ":violet[Compost Speed Attribute Level]",
+}
 
 ATTRIBUTE_RARITIES = ["common", "uncommon", "rare", "epic", "legendary"]
 
@@ -122,6 +130,9 @@ UPGRADE_SOURCES = {
     },
     "CONDENSED_FERMENTO": {
         "pretty_print": "Condensed Fermento",
+    },
+    "SHARD_BAYOU_SLUDGE": {
+        "pretty_print": "Bayou Sludge Shard",
     },
 }
 

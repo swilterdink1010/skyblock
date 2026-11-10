@@ -5,6 +5,7 @@ from media import MEDIA_LINKS
 from typing import Any, Tuple, cast, Literal
 from datetime import time
 import streamlit as st
+import pandas as pd
 
 
 def st_get(key: str, default: Any = None) -> Any:
@@ -133,7 +134,7 @@ def mats_to_upgrade(state: ComposterState, upgraded_state: ComposterState) -> Tu
     return items, copper
                 
                 
-def coins_to_upgrade(items: dict, copper: int, copper_value: int = 0) -> float:
+def coins_to_upgrade(items: dict, copper: int, copper_value: int = 0) -> float: # either refactor or make args based on ComposterStates later
     total_cost = 0
     for item in items.keys():
         total_cost += hyapi.get_bz_price(item) * items[item]
@@ -275,16 +276,77 @@ def main():
         upgrade_tab, sim_tab, uptime_tab, bottomline_tab \
             = st.tabs(["Best Value Upgrades", "Compost Rates", "Target Uptime Upgrades", "Bottom Line Upgrades"])
         with upgrade_tab:
-            valid_upgrades = []
-            for upgrade in cc.UPGRADE_TYPES:
-                if not state.is_maxed(upgrade):
-                    valid_upgrades.append(upgrade)
+            valid_upgrades = list(filter(lambda x: not state.is_maxed(x), cc.UPGRADE_TYPES))
                     
-            upgrade_states = {}
+            use_non_profitable = st.toggle("Show Non-profitable Upgrades")
+                    
+            def get_upgraded_state(state: ComposterState, upgrade: str) -> ComposterState:
+                new = copy.deepcopy(state)
+                setattr(new, upgrade, getattr(new, upgrade)+1)
+                return new
+            
+            upgrade_states = { upgrade: { "state": get_upgraded_state(state, upgrade), "profit_hr": 0.0, } for upgrade in valid_upgrades }
             for upgrade in valid_upgrades:
-                upgrade_states[upgrade] = {
-                    # UNIMPLEMENTED
-                }
+                upgrade_states[upgrade]["profit_hr"] = upgrade_states[upgrade]["state"].get_profit_hr("SUNFLOWER_OIL", "ENCHANTED_SEEDS", st.session_state["buy_mode"], st.session_state["sell_mode"]) # add global fuel/matter selection later
+                upgrade_states[upgrade]["cost"] = coins_to_upgrade(*mats_to_upgrade(state, upgrade_states[upgrade]["state"]), copper_value=0) # add copper value input later
+                try:
+                    upgrade_states[upgrade]["value"] = upgrade_states[upgrade]["cost"]/(upgrade_states[upgrade]["profit_hr"]-state.get_profit_hr("SUNFLOWER_OIL", "ENCHANTED_SEEDS", st.session_state["buy_mode"], st.session_state["sell_mode"])) # add global fuel/matter selection later
+                except ZeroDivisionError:
+                    upgrade_states[upgrade]["value"] = float("inf")
+            good_states = {}
+            bad_states = {}
+            for upgrade_state in upgrade_states:
+                if upgrade_states[upgrade_state]["value"] < 0 or upgrade_states[upgrade_state]["value"] in [float("inf"), float("-inf")]:
+                    bad_states[upgrade_state] = upgrade_states[upgrade_state]
+                else: good_states[upgrade_state] = upgrade_states[upgrade_state]
+            good_states = dict(sorted(good_states.items(), key=lambda x: x[1]["value"]))
+            bad_states = dict(sorted(bad_states.items(), key=lambda x: x[1]["value"], reverse=True))
+            for state_select in [good_states, bad_states] if use_non_profitable else [good_states]:
+                for upgrade in state_select:
+                    with st.container(border=True):
+                        left, right = st.columns([1, 1], vertical_alignment="center")
+                        with left:
+                            cols = st.columns([5,2], vertical_alignment="center")
+                            with cols[0]:
+                                st.markdown(f"##### {cc.UPGRADE_NAMES_MARKDOWN[upgrade]}")
+                            with cols[1]:
+                                with st.container(border=True, vertical_alignment="center"):
+                                    st.markdown(f"**{getattr(state, upgrade)+1}**", text_alignment="center")
+                        with right:
+                            if upgrade_states[upgrade]["value"] in [float("inf"), float("-inf")]:
+                                data = pd.DataFrame(data={"Profit Change": 0, "Upgrade Cost": [upgrade_states[upgrade]["cost"]]})
+                            elif upgrade_states[upgrade]["value"] < 0:
+                                data = pd.DataFrame(data={"Cost per -10,000/hr": [upgrade_states[upgrade]["value"]*-10000 if upgrade_states[upgrade]["value"] >= -100_000_000 else r"\> 1,000,000,000,000.0"], "Upgrade Cost": [upgrade_states[upgrade]["cost"]]})
+                            else:
+                                data = pd.DataFrame(data={"Cost per 10,000/hr": [upgrade_states[upgrade]["value"]*10000 if upgrade_states[upgrade]["value"] <= 100_000_000 else r"\> 1,000,000,000,000.0"], "Upgrade Cost": [upgrade_states[upgrade]["cost"]]})
+                            st.table(data.style.format(precision=1, thousands=","))
+                        items, copper = mats_to_upgrade(state, upgrade_states[upgrade]["state"])
+                        with st.expander(f"Materials to Upgrade"):
+                            with st.columns(1, border=True, vertical_alignment="center")[0]:
+                                price = 0 # add global price per copper later
+                                cols3 = st.columns([7, 2, 2, 3])
+                                with cols3[0]:
+                                    st.markdown(f":red[Copper]", text_alignment="left")
+                                with cols3[1]:
+                                    st.markdown(f":gray[x]{copper}", text_alignment="right")
+                                with cols3[2]:
+                                    st.markdown(f":orange[{numerize(copper * price)}]", text_alignment="right")
+                                with cols3[3]:
+                                    st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
+                                
+                            for id in items.keys():
+                                if items[id] == 0: continue
+                                with st.columns(1, border=True, vertical_alignment="center")[0]:
+                                    price = hyapi.get_bz_price(id)
+                                    cols3 = st.columns([7, 2, 2, 3])
+                                    with cols3[0]:
+                                        st.markdown(f"{cc.UPGRADE_SOURCES[id]["pretty_print"]}", text_alignment="left")
+                                    with cols3[1]:
+                                        st.markdown(f":gray[x]{items[id]}", text_alignment="right")
+                                    with cols3[2]:
+                                        st.markdown(f":orange[{numerize(items[id]*price)}]", text_alignment="right")
+                                    with cols3[3]:
+                                        st.markdown(f":gray[({numerize(price)} ea.)]", text_alignment="right")
                     
         with sim_tab:
             with st.columns(1, vertical_alignment="center", border=True)[0]:
@@ -358,7 +420,7 @@ def main():
         
         with uptime_tab:
             with st.columns(1, vertical_alignment="center", border=True)[0]:
-                st.session_state["target_uptime"] = time_to_int(st.session_state["target_uptime_datetime"])
+                st.session_state["target_uptime"] = time_to_int(st_get("target_uptime_datetime", time(4)))
                 target_uptime_met = state.sim_composter()[0] >= st_get("target_uptime", float("inf"))
                     
                 with st.columns(1, vertical_alignment="center", border=True)[0]:
@@ -404,9 +466,7 @@ def main():
                         ""
                     with st.columns(1, border=True, vertical_alignment="center")[0]:
                         items, copper = mats_to_upgrade(state, upg_state)
-                        total_cost = 0
-                        for item in items.keys():
-                            total_cost += hyapi.get_bz_price(item) * items[item]
+                        total_cost = coins_to_upgrade(items, copper, copper_value=0)
                             
                         st.markdown(f"""
                             ## :rainbow[Cost of Upgrades]: :orange[{round(total_cost, 1):,}]<br>Copper Cost: :red[{copper:,}]
@@ -500,6 +560,7 @@ def main():
                         
                         with st.expander("Items"):
                             for id in items.keys():
+                                if items[id] == 0: continue
                                 with st.columns(1, border=True, vertical_alignment="center")[0]:
                                     price = hyapi.get_bz_price(id)
                                     cols3 = st.columns([7, 2, 2, 3])
