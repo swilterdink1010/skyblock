@@ -1,10 +1,12 @@
 # Hypixel Skyblock Tools
 
-A compilation of tools for Hypixel Skyblock that I plan to host on a web domain. Right now, there's just one tool, but I will develop more as I find the need to.
+A compilation of tools for Hypixel Skyblock hosted on [bigman7305.dev](https://bigman7305.dev). Right now, there's just one tool, but I will develop more as I find the need to.
 
 ## Tools
 
 ### Composter
+
+> Now live at [composter.bigman7305.dev](https://composter.bigman7305.dev/)!
 
 A tool built to calculate optimal solutions to composter upgrading. Each tab is meant to answer its own unique question.
 
