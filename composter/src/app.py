@@ -305,17 +305,19 @@ def main():
                 else: good_states[upgrade_state] = upgrade_states[upgrade_state]
             good_states = dict(sorted(good_states.items(), key=lambda x: x[1]["value"]))
             bad_states = dict(sorted(bad_states.items(), key=lambda x: x[1]["value"], reverse=True))
+            ranking = 0
             for state_select in [good_states, bad_states] if use_non_profitable else [good_states]:
                 for upgrade in state_select:
+                    ranking += 1
                     with st.container(border=True):
                         left, right = st.columns([1, 1], vertical_alignment="center")
                         with left:
                             cols = st.columns([5,2], vertical_alignment="center")
                             with cols[0]:
-                                st.markdown(f"##### {cc.UPGRADE_NAMES_MARKDOWN[upgrade]}")
+                                st.markdown(f"##### #{ranking} {cc.UPGRADE_NAMES_MARKDOWN[upgrade]}")
                             with cols[1]:
                                 with st.container(border=True, vertical_alignment="center"):
-                                    st.markdown(f"**{getattr(state, upgrade)+1}**", text_alignment="center")
+                                    st.markdown(f"**Lv {getattr(state, upgrade)+1}**", text_alignment="center")
                         with right:
                             if upgrade_states[upgrade]["value"] in [float("inf"), float("-inf")]:
                                 data = pd.DataFrame(data={"Profit Change": 0, "Upgrade Cost": [upgrade_states[upgrade]["cost"]]})
