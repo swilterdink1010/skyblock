@@ -35,9 +35,9 @@ A tool built to calculate optimal solutions to composter upgrading. Each tab is 
 
 > **Note:** Roadmap is tentative. Any future plans are subject to change.
 
-## Donate
+## Support
 
-All code here is open source. To cover the costs of maintaining code, web domains, and headaches, please consider donating to me on Ko-Fi.
+All code here is open source. To cover the costs of maintaining code, web domains, and headaches, please consider supporting this project on Ko-Fi.
 
 [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/R7A02A9MQE)
 
