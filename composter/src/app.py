@@ -211,34 +211,41 @@ def main():
     
     init_session_state()
     
-    profile_col1, profile_col2 = st.columns(2)
+    cols = st.columns([1,1], vertical_alignment="center")
     
-    with profile_col1:
-        st.text_input("IGN:", max_chars=16, value="bigman7305", key="ign")
+    with cols[0]: 
+        st.title("Composter Tools", text_alignment="left")
+        ""
+    with cols[1]:
+        with st.expander("Profile Selection"):
     
-    uuid: str = ""
-    profiles: list = []
-    profile_id: str = ""
-    profile_data: dict = {}
-    garden: dict = {}
-    player_dne_warning: bool = False
-    
-    with profile_col2:
-        try:
-            uuid = hyapi.get_uuid(st.session_state["ign"])
-            profiles = hyapi.get_profiles(uuid)
-        except hyapi.BadAPICallError as e:
-            if e.code == hyapi.BadAPICallCode.NO_UUID:
-                player_dne_warning = True
-            else: st.error(e)
-        if profiles:
-            st.selectbox("Profile:", [profile["cute_name"] for profile in profiles], key="selected_profile")
-        elif player_dne_warning:
-            st.warning(f"Could not find player {st.session_state["ign"]!r}.", icon=":material/warning:")
-        else:
-            st.selectbox("Profile:", [])
+            profile_col1, profile_col2 = st.columns(2)
             
-        
+            with profile_col1:
+                st.text_input("IGN", max_chars=16, value="bigman7305", key="ign")
+            
+            uuid: str = ""
+            profiles: list = []
+            profile_id: str = ""
+            profile_data: dict = {}
+            garden: dict = {}
+            player_dne_warning: bool = False
+            
+            with profile_col2:
+                try:
+                    uuid = hyapi.get_uuid(st.session_state["ign"])
+                    profiles = hyapi.get_profiles(uuid)
+                except hyapi.BadAPICallError as e:
+                    if e.code == hyapi.BadAPICallCode.NO_UUID:
+                        player_dne_warning = True
+                    else: st.error(f":small[{e}]", icon=":material/error:")
+                if profiles:
+                    st.selectbox("Profile", [profile["cute_name"] for profile in profiles], key="selected_profile")
+                elif player_dne_warning:
+                    st.warning(f":small[Could not find player {st.session_state["ign"]!r}.]", icon=":material/warning:")
+                else:
+                    st.selectbox("Profile:", [])
+            
     if profiles:
         profile_id = hyapi.get_profile_id(st.session_state["selected_profile"], uuid, profiles=profiles)
     st.session_state["profile_id"] = profile_id
@@ -250,7 +257,7 @@ def main():
         garden = hyapi.get_garden_data(st_get("profile_id"))
     except hyapi.BadAPICallError as e:
         if e.code == hyapi.BadAPICallCode.NO_GARDEN_DATA:
-            st.info("No garden data found for profile, assuming no upgrades", icon=":material/feedback:")
+            st.info(":small[No garden data found for loaded profile, assuming no upgrades]", icon=":material/feedback:")
         else: st.error(e)
     
     st.session_state["attr"] = profile_data.get("members", {}).get(uuid, {}).get("attributes", {})
@@ -260,8 +267,6 @@ def main():
     
     # WEBSITE CONTENT
     state = composter_state_from_session()
-    
-    st.title("Composter Tools", text_alignment="center")
     
     values_col, content_col = st.columns([1, 4])
     
