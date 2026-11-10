@@ -202,6 +202,10 @@ def buy_mode_pills(key: str) -> hyapi.BuyMode:
     
 
 def main():
+    st.set_page_config(
+    page_title="Composter Tools | bigman7305.dev",
+    page_icon=MEDIA_LINKS.compost_img,
+    )
     # DATA LOADING
     st.markdown("<style>[data-testid='stHeaderActionElements'] {display: none;}</style>", unsafe_allow_html=True)
     
@@ -581,10 +585,16 @@ def main():
         
         footer_left, footer_right = st.columns([1, 3], vertical_alignment="center")
         with footer_left:
-            st.link_button("Support this project", "https://ko-fi.com/bigman7305", icon=":material/favorite:")
+            st.link_button("Support this project", "https://ko-fi.com/bigman7305", icon=":material/volunteer_activism:")
         with footer_right:    
-            st.markdown(":gray[Source code can be found [here](https://github.com/swilterdink1010/skyblock).]<br>:gray[*This project is not affiliated with or endorsed by Hypixel Inc. or Mojang Studios.*]", text_alignment="right", unsafe_allow_html=True)
-                                            
+            st.markdown(
+                ":gray[:small[*This tool's code is open source under the [MIT License](https://opensource.org/licenses/MIT). Assets are credited separately.*]]<br>"
+                ":small[[*View the code on GitHub*](https://github.com/swilterdink1010/skyblock)]<br><br>"
+                ":gray[:small[*This project includes assets from the [Hypixel Skyblock Wiki](https://hypixelskyblock.minecraft.wiki/), licensed under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/).*]]<br>"
+                ":gray[:small[*This project is not affiliated with or endorsed by Hypixel Inc.*]]",
+                text_alignment="right", unsafe_allow_html=True
+            )
+        st.markdown(":gray[:small[*NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT*]]", text_alignment="right", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
