@@ -475,6 +475,7 @@ def main():
                         
                         with st.expander("Items"):
                             for id in items.keys():
+                                if items[id] == 0: continue
                                 with st.columns(1, border=True, vertical_alignment="center")[0]:
                                     price = hyapi.get_bz_price(id)
                                     cols3 = st.columns([7, 2, 2, 3])
