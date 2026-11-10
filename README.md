@@ -23,8 +23,8 @@ A tool built to calculate optimal solutions to composter upgrading. Each tab is 
 
 ### In Progress
 
-- Finish composter tools
-- Register web domain & host
+- Update Composter Tools
+    - Add global toggles for fuel sources, add option for copper value in coins
 
 ### Future Plans
 
