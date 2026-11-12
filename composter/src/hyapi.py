@@ -11,6 +11,7 @@ class BadAPICallCode(Enum):
     NO_BZ_DATA = 408
     BAD_API_KEY = 409
 
+
 class BadAPICallError(Exception):
     def __init__(self, message: str, code: BadAPICallCode | int = 400):
         super().__init__(message)
@@ -25,14 +26,36 @@ HEADERS = {
     "API-Key": HYPIXEL_API_KEY,
 }
 
+
+def is_valid_username(username: str) -> bool:
+    if len(username) < 3 or len(username) > 16:
+        return False
+    for char in username:
+        if char.lower() not in "1234567890abcdefghijklmnopqrstuvwxyz_":
+            return False
+    return True
+
+
 _uuid_cache = {}
 UUID_CACHE_LIMIT = 4096
 def _drop_uuid_cache() -> None:
     oldest = min(_uuid_cache, key=lambda x: _uuid_cache[x]["timestamp"])
     del _uuid_cache[oldest]
     
+_bad_uuid_cache = {}
+BAD_UUID_CACHE_LIMIT = 4096
+def _drop_bad_uuid_cache() -> None:
+    oldest = min(_bad_uuid_cache, key=lambda x: _bad_uuid_cache[x])
+    del _bad_uuid_cache[oldest]
+    
 def get_uuid(username: str, data_lifetime: int = 86400) -> str:
+    if not is_valid_username(username):
+        raise ValueError(f"Invalid {username = }")
     username = username.lower()
+    if username in _bad_uuid_cache:
+        if time.monotonic()-_bad_uuid_cache[username] >= data_lifetime:
+            del _bad_uuid_cache[username]
+        else: raise BadAPICallError(f"Could not get UUID for {username = }", BadAPICallCode.NO_UUID)
     if username not in _uuid_cache:
         _uuid_cache[username] = {
             "timestamp": float("-inf"),
@@ -45,6 +68,9 @@ def get_uuid(username: str, data_lifetime: int = 86400) -> str:
             _uuid_cache[username]["timestamp"] = time.monotonic()
         else: 
             del _uuid_cache[username]
+            _bad_uuid_cache[username] = time.monotonic()
+            if len(_bad_uuid_cache) > BAD_UUID_CACHE_LIMIT:
+                _drop_bad_uuid_cache()
             raise BadAPICallError(f"Could not get UUID for {username = }", BadAPICallCode.NO_UUID)
         if len(_uuid_cache) > UUID_CACHE_LIMIT:
             _drop_uuid_cache()
@@ -57,7 +83,17 @@ def _drop_profiles_cache() -> None:
     oldest = min(_profiles_cache, key=lambda x: _profiles_cache[x]["timestamp"])
     del _profiles_cache[oldest]
 
+_bad_profiles_cache = {}
+BAD_PROFILES_CACHE_LIMIT = 4096
+def _drop_bad_profiles_cache() -> None:
+    oldest = min(_profiles_cache, key=lambda x: _bad_profiles_cache[x])
+    del _bad_profiles_cache[oldest]
+
 def get_profiles(uuid: str, data_lifetime: int = 600) -> list:
+    if uuid in _bad_profiles_cache:
+        if time.monotonic()-_bad_profiles_cache[uuid] >= data_lifetime:
+            del _bad_profiles_cache[uuid]
+        else: raise BadAPICallError(f"Could not get profile data for {uuid = }", BadAPICallCode.NO_PROFILE_DATA)
     if uuid not in _profiles_cache:
         _profiles_cache[uuid] = {
             "timestamp": float("-inf"),
@@ -74,6 +110,9 @@ def get_profiles(uuid: str, data_lifetime: int = 600) -> list:
                 raise BadAPICallError("Bad API key", BadAPICallCode.BAD_API_KEY)
             case _:
                 del _profiles_cache[uuid]
+                _bad_profiles_cache[uuid] = time.monotonic()
+                if len(_bad_profiles_cache) > PROFILES_CACHE_LIMIT:
+                    _drop_bad_profiles_cache()
                 raise BadAPICallError(f"Could not get profile data for {uuid = }", BadAPICallCode.NO_PROFILE_DATA)
         if len(_profiles_cache) > PROFILES_CACHE_LIMIT:
             _drop_profiles_cache()
@@ -95,7 +134,17 @@ def _garden_cache_drop() -> None:
     oldest = min(_garden_cache, key=lambda x: _garden_cache[x]["timestamp"])
     del _garden_cache[oldest]
     
+_bad_garden_cache = {}
+BAD_GARDEN_CACHE_LIMIT = 4096
+def _drop_bad_garden_cache() -> None:
+    oldest = min(_bad_garden_cache, key=lambda x: _bad_garden_cache[x])
+    del _bad_garden_cache[oldest]
+    
 def get_garden_data(profile_id: str, data_lifetime: int = 600) -> dict:
+    if profile_id in _bad_garden_cache:
+        if time.monotonic()-_bad_garden_cache[profile_id] >= data_lifetime:
+            del _bad_garden_cache[profile_id]
+        else: raise BadAPICallError(f"Could not get garden data for {profile_id = }", BadAPICallCode.NO_GARDEN_DATA)
     if profile_id not in _garden_cache:
         _garden_cache[profile_id] = {
             "timestamp": float("-inf"),
@@ -108,6 +157,9 @@ def get_garden_data(profile_id: str, data_lifetime: int = 600) -> dict:
             _garden_cache[profile_id]["data"] = response.json()["garden"]
         else:
             del _garden_cache[profile_id]
+            _bad_garden_cache[profile_id] = time.monotonic()
+            if len(_bad_garden_cache) > BAD_GARDEN_CACHE_LIMIT:
+                _drop_bad_garden_cache()
             raise BadAPICallError(f"Could not get garden data for {profile_id = }", BadAPICallCode.NO_GARDEN_DATA)
         if len(_garden_cache) > GARDEN_CACHE_LIMIT:
             _garden_cache_drop()
@@ -143,7 +195,7 @@ _bz_cache = {
 _bz_lock = threading.Lock()
 def get_bz_data(data_lifetime: int = 300) -> dict:
     with _bz_lock:
-        if time.monotonic() - _bz_cache["timestamp"] >= data_lifetime:
+        if time.monotonic()-_bz_cache["timestamp"] >= data_lifetime:
             response = requests.get("https://api.hypixel.net/v2/skyblock/bazaar", headers=HEADERS, timeout=10)
             if response.status_code == 200:
                 _bz_cache["timestamp"] = time.monotonic()
