@@ -26,6 +26,8 @@ A tool built to calculate optimal solutions to composter upgrading. Each tab is 
 - Update Composter Tools
     - Remove unnecessary Streamlit elements
     - Add global toggles for fuel sources
+    - Add all fuel/organic matter sources
+    - Add best value fuel/organic matter sources calculator
     - Add option for copper value in coins
     - Add sidebar for global inputs
     - Make UI more user friendly in all tabs
