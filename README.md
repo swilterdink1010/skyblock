@@ -28,7 +28,6 @@ A tool built to calculate optimal solutions to composter upgrading. Each tab is 
 
 ### Future Plans
 
-- Carnival fruit digging solver
 - Foraging setup optimal upgrades
 - Fishing setup optimal upgrades
 - Mining setup optimal upgrades
