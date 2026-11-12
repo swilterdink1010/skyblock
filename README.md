@@ -24,13 +24,21 @@ A tool built to calculate optimal solutions to composter upgrading. Each tab is 
 ### In Progress
 
 - Update Composter Tools
-    - Add global toggles for fuel sources, add option for copper value in coins
+    - Remove unnecessary Streamlit elements
+    - Add global toggles for fuel sources
+    - Add option for copper value in coins
+    - Add sidebar for global inputs
+    - Make UI more user friendly in all tabs
+    - Add Skyblock XP tab (cheapest cost/sbxp upgrades)
+    - Add time to pay off upgrades info
+
 
 ### Future Plans
 
 - Foraging setup optimal upgrades
 - Fishing setup optimal upgrades
 - Mining setup optimal upgrades
+- Rewrite Composter Tools in HTML/JavaScript
 
 > **Note:** Roadmap is tentative. Any future plans are subject to change.
 
