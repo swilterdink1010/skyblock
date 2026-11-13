@@ -217,7 +217,7 @@ def main():
         st.title("Composter Tools", text_alignment="left")
         ""
     with cols[1]:
-        with st.expander("Profile Selection"):
+        with st.expander(f"Profile: {f"{st_get("ign")} on {st_get("selected_profile")}" if st_get("ign") is not None else "None"}"):
     
             profile_col1, profile_col2 = st.columns(2)
             
