@@ -4,6 +4,7 @@ from composter_state import ComposterState
 from media import MEDIA_LINKS
 from typing import Any, Tuple, cast, Literal
 from datetime import time
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 
@@ -204,7 +205,7 @@ def buy_mode_pills(key: str) -> hyapi.BuyMode:
 def main():
     st.set_page_config(
     page_title="Composter Tools | bigman7305.dev",
-    page_icon=MEDIA_LINKS.compost_img,
+    page_icon=Path(__file__).parent.parent / "assets" / "favicon.png",
     )
     # DATA LOADING
     st.markdown("<style>[data-testid='stHeaderActionElements'] {display: none;}</style>", unsafe_allow_html=True)
